@@ -89,7 +89,7 @@ class listener(StreamListener):
 		return True
 
 if __name__ == "__main__":
-	configparser = CrawlerToolBox.loadConfigParser('twitter-monitor.cfg')
+	configparser = CrawlerToolBox.loadConfigParser('TwitterMonitor.cfg')
 
 	try:
 		CrawlerToolBox.plotBanner()

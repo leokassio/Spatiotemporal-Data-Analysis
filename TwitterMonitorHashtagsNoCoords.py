@@ -77,7 +77,7 @@ class listener(StreamListener):
 
 
 if __name__ == "__main__":
-	configparser = CrawlerToolBox.loadConfigParser('twitter-monitor.cfg')
+	configparser = CrawlerToolBox.loadConfigParser('TwitterMonitor.cfg')
 
 	try:
 		script_filename, oauth_profile, configName = sys.argv
