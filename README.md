@@ -14,5 +14,8 @@ Set of tools for exploratory data analysis using Twitter, Instagram and Foursqua
 * instagram-venue-crawler-multiprocessing: xxx
 
 
+### Simulation
+* EncounterSimulator: simulator to estimate the 
+
 ### Data Cleaning and Preparation
 * DatasetExporter: set of functions to export the subset of samples according to the cities and periods of data collections. The functions export the datasets in CSV files.
