@@ -32,7 +32,7 @@ def loadTotalRows(inputfilename):
 
 def loadNextPage(reader, samples=50000, datePattern='%Y-%m-%d %H:%M:%S'):
 	eof = False
-	samples = list()
+	datasamples = list()
 	for i in tqdm(range(samples), desc='Loading CSV', leave=False):
 		try:
 			line = next(reader)
@@ -40,8 +40,8 @@ def loadNextPage(reader, samples=50000, datePattern='%Y-%m-%d %H:%M:%S'):
 			eof = True
 		date_local, uid, lat, lng, id_data, country, content = line
 		date_local = datetime.datetime.strptime(date_local, datePattern)
-		samples.append((date_local, uid, float(lat), float(lng), id_data, country))
-	return samples, eof
+		datasamples.append((date_local, uid, float(lat), float(lng), id_data, country))
+	return datasamples, eof
 
 def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 
@@ -55,18 +55,23 @@ def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 	inputfile = open(inputfilename, 'r')
 	reader = csv.reader(inputfile)
 	eof = False
+	trace = list()
 
 	pbar = tqdm(desc='Spatiotemporal Graph', total=nrows)
 	while eof != True:
-		trace, eof = loadNextPage(reader)
+		data, eof = loadNextPage(reader)
+		trace += data
+		sliceTraceFlag = 0
 		for i, s1 in enumerate(trace):
 			pbar.update(1)
 			date_local, uid, lat, lng, id_data, country = s1
 			# testing if all samples comparable to s1 are loaded in-memory
 			s2 = trace[-1]
 			interval = (s2[0] - date_local).total_seconds()
-			if interval < maxInterval and eof != False:
-				continue
+			if interval <= maxInterval and eof != False:
+				'Reading more samples...'
+				sliceTraceFlag = i
+				break
 			tmstmp = date_local.strftime('%y-%m-%d %H:%M:%S')
 			for j in xrange(i + 1, len(trace)):
 				s2 = trace[j]
@@ -82,12 +87,13 @@ def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 				else:
 					break
 			if len(bufferOut) >= 5000:
+				print 'Saving Encounters...'
 				for row in bufferOut:
 					writer.writerow(row)
 				bufferOut = list()
-		if eof == False:
-			trace = trace[i+1:]
+		trace = trace[sliceTraceFlag:]
 	for row in bufferOut:
+		print 'Cleaning Buffer!'
 		writer.writerow(row)
 
 if __name__ == "__main__":
