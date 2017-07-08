@@ -62,7 +62,7 @@ def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 
 	pbar = tqdm(desc='Spatiotemporal Graph', total=nrows)
 	while eof != True:
-		data, eof = loadNextPage(reader, numpy.random.randint(50, 150))
+		data, eof = loadNextPage(reader)
 		trace += data
 		sliceTraceFlag = 0
 		for i, s1 in enumerate(trace):
