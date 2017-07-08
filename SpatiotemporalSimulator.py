@@ -7,8 +7,6 @@ import colorama
 import pandas as pd
 from tqdm import tqdm
 
-import numpy
-
 def distanceCoords(lat1, long1, lat2, long2):
 	try:
 		# Convert latitude and longitude to
