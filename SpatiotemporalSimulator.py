@@ -3,8 +3,11 @@ import csv
 import sys
 import math
 import datetime
+import colorama
 import pandas as pd
 from tqdm import tqdm
+
+import numpy
 
 def distanceCoords(lat1, long1, lat2, long2):
 	try:
@@ -24,7 +27,7 @@ def distanceCoords(lat1, long1, lat2, long2):
 
 def loadTotalRows(inputfilename):
 	inputfile = open(inputfilename, 'rb')
-	for nrows, l in tqdm(enumerate(inputfile), desc='Counting Lines'):
+	for nrows, l in tqdm(enumerate(inputfile), desc='Counting Lines', leave=False):
 		pass
 	nrows += 1
 	inputfile.close()
@@ -33,11 +36,12 @@ def loadTotalRows(inputfilename):
 def loadNextPage(reader, samples=50000, datePattern='%Y-%m-%d %H:%M:%S'):
 	eof = False
 	datasamples = list()
-	for i in tqdm(range(samples), desc='Loading CSV', leave=False):
+	for i in tqdm(xrange(samples), desc='Loading CSV', disable=True, leave=False):
 		try:
 			line = next(reader)
 		except StopIteration:
 			eof = True
+			break
 		date_local, uid, lat, lng, id_data, country, content = line
 		date_local = datetime.datetime.strptime(date_local, datePattern)
 		datasamples.append((date_local, uid, float(lat), float(lng), id_data, country))
@@ -51,7 +55,6 @@ def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 	writer = csv.writer(outf)
 
 	nrows = loadTotalRows(inputfilename)
-
 	inputfile = open(inputfilename, 'r')
 	reader = csv.reader(inputfile)
 	eof = False
@@ -59,20 +62,19 @@ def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 
 	pbar = tqdm(desc='Spatiotemporal Graph', total=nrows)
 	while eof != True:
-		data, eof = loadNextPage(reader)
+		data, eof = loadNextPage(reader, numpy.random.randint(50, 150))
 		trace += data
 		sliceTraceFlag = 0
 		for i, s1 in enumerate(trace):
-			pbar.update(1)
 			date_local, uid, lat, lng, id_data, country = s1
 			# testing if all samples comparable to s1 are loaded in-memory
 			s2 = trace[-1]
 			interval = (s2[0] - date_local).total_seconds()
-			if interval <= maxInterval and eof != False:
-				'Reading more samples...'
+			if interval <= maxInterval and eof == False:
 				sliceTraceFlag = i
 				break
 			tmstmp = date_local.strftime('%y-%m-%d %H:%M:%S')
+			pbar.update(1)
 			for j in xrange(i + 1, len(trace)):
 				s2 = trace[j]
 				if uid != s2[1]:
@@ -86,14 +88,14 @@ def loadTraceEncounters(inputfilename, maxInterval=900, maxDistance=150):
 						break
 				else:
 					break
-			if len(bufferOut) >= 5000:
-				print 'Saving Encounters...'
+			sliceTraceFlag = i + 1
+			if len(bufferOut) >= 10000:
 				for row in bufferOut:
 					writer.writerow(row)
 				bufferOut = list()
 		trace = trace[sliceTraceFlag:]
+
 	for row in bufferOut:
-		print 'Cleaning Buffer!'
 		writer.writerow(row)
 
 if __name__ == "__main__":
