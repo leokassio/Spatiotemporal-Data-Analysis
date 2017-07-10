@@ -7,9 +7,11 @@
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
+import csv
+import numpy
 import datetime
 import colorama
-import numpy
+from tqdm import tqdm
 from ConfigParser import SafeConfigParser
 
 def loadConfigParser(fname):
@@ -66,3 +68,46 @@ def plotBanner():
 	print '▀▀█▀▀ █░░░█ ░▀░ ▀▀█▀▀ ▀▀█▀▀ █▀▀ █▀▀█	'
 	print '░▒█░░ █▄█▄█ ▀█▀ ░░█░░ ░░█░░ █▀▀ █▄▄▀ '
 	print '░▒█░░ ░▀░▀░ ▀▀▀ ░░▀░░ ░░▀░░ ▀▀▀ ▀░▀▀ ', colorama.Fore.RESET
+
+def loadPlaceStats(inputfile, csvfile=None):
+    """ Function to load and group the samples according to places and countries.
+    The inputfile are the samples collected from TwitterMonitors
+    and the returns are dicts of places and countries. """
+
+    invalidSample = 0
+    dictCountries = dict()
+    dictPlaces = dict()
+    dictPlacesInfo = dict()
+    print colorama.Fore.RED, 'Grouping Places:', inputfile, colorama.Fore.RESET
+    inputfile = open(inputfile, 'r')
+    for line in tqdm(inputfile, desc='Loading'):
+        try:
+            sample = eval(line.replace('\n', ''))
+            country = sample['country']
+            place = sample['place_name']
+            place_type = sample['place_type']
+            place_url = sample['place_url']
+        except KeyError:
+            invalidSample += 1
+            continue
+        except SyntaxError:
+            invalidSample += 1
+            continue
+
+        try:
+            dictCountries[country] += 1
+        except KeyError:
+            dictCountries[country] = 1
+        try:
+            dictPlaces[place_url] += 1
+        except KeyError:
+            dictPlaces[place_url] = 1
+            dictPlacesInfo[place_url] = (place_url, place_type, country, place)
+    for p in dictPlaces:
+        info = dictPlacesInfo[p]
+        dictPlacesInfo[p] = ([info[0], info[1], info[2], info[3], dictPlaces[p]])
+    return dictPlacesInfo, dictCountries
+
+
+
+#
