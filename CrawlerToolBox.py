@@ -106,6 +106,7 @@ def loadPlaceStats(inputfile, csvfile=None):
     for p in dictPlaces:
         info = dictPlacesInfo[p]
         dictPlacesInfo[p] = ([info[0], info[1], info[2], info[3], dictPlaces[p]])
+    print colorama.Fore.RED, invalidSample, 'invalid samples', colorama.Fore.RESET
     return dictPlacesInfo, dictCountries
 
 
