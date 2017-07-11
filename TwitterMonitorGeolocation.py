@@ -12,7 +12,7 @@ import json
 import time
 import datetime
 import colorama
-import CrawlerToolBox
+import TwitterMonitor
 from tweepy import Stream
 from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
@@ -91,13 +91,13 @@ class listener(StreamListener):
 		return True
 
 if __name__ == "__main__":
-	configparser = CrawlerToolBox.loadConfigParser('TwitterMonitor.cfg')
+	configparser = TwitterMonitor.loadConfigParser('TwitterMonitor.cfg')
 	try:
-		CrawlerToolBox.plotBanner()
+		TwitterMonitor.plotBanner()
 		script_filename, oauth_profile, configName = sys.argv
-		ckey, csecret = CrawlerToolBox.loadAppOAuth(configparser)
-		atoken, asecret = CrawlerToolBox.loadUserOAuth(configparser, sys.argv[1])
-		locationLabel, cooordinates = CrawlerToolBox.loadBoundBox(configparser, sys.argv[2])
+		ckey, csecret = TwitterMonitor.loadAppOAuth(configparser)
+		atoken, asecret = TwitterMonitor.loadUserOAuth(configparser, sys.argv[1])
+		locationLabel, cooordinates = TwitterMonitor.loadBoundBox(configparser, sys.argv[2])
 	except ValueError:
 		print 'PLEASE INFORM THE INPUT DATA: python twitter-monitor-geolocation.py 1 location-name (New-York)'
 		print 'Please check the config names and bounding boxes available on twitter-monitor.cfg file'

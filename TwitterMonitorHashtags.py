@@ -14,7 +14,7 @@ import time
 import numpy
 import datetime
 import colorama
-import CrawlerToolBox
+import TwitterMonitor
 from tweepy import Stream
 from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
@@ -89,16 +89,16 @@ class listener(StreamListener):
 		return True
 
 if __name__ == "__main__":
-	configparser = CrawlerToolBox.loadConfigParser('TwitterMonitor.cfg')
+	configparser = TwitterMonitor.loadConfigParser('TwitterMonitor.cfg')
 
 	try:
-		CrawlerToolBox.plotBanner()
+		TwitterMonitor.plotBanner()
 		script_filename, oauth_profile, configName = sys.argv
-		ckey, csecret = CrawlerToolBox.loadAppOAuth(configparser)
-		atoken, asecret = CrawlerToolBox.loadUserOAuth(configparser, sys.argv[1])
-		hashtags = CrawlerToolBox.loadHashtags(configparser, configName)
+		ckey, csecret = TwitterMonitor.loadAppOAuth(configparser)
+		atoken, asecret = TwitterMonitor.loadUserOAuth(configparser, sys.argv[1])
+		hashtags = TwitterMonitor.loadHashtags(configparser, configName)
 		# geolocated_filter_method = loadGeolocatedMethod(configparser, configName)
-		filename_alias = CrawlerToolBox.loadFilenameAlias(configparser, configName)
+		filename_alias = TwitterMonitor.loadFilenameAlias(configparser, configName)
 	except ValueError:
 		print 'PLEASE INFORM THE INPUT DATA: python twitter-monitor-hashtags.py 1 configName'
 		print 'Please check the config names available on twitter-monitor.cfg file'

@@ -9,7 +9,7 @@ import sys
 import colorama
 import datetime
 from tqdm import tqdm
-import CrawlerToolBox
+import TwitterMonitor
 
 def groupPlaces(args):
 	""" Count the samples and group them according to the places indicated by
@@ -18,7 +18,7 @@ def groupPlaces(args):
 	countries. """
 	inputfiles = [args] if type(args) != list else args
 	for filename in inputfiles:
-		dataPlaces, dataCountries = CrawlerToolBox.loadPlaceStats(filename)
+		dataPlaces, dataCountries = TwitterMonitor.loadPlaceStats(filename)
 		outputfilename = filename.replace('.csv', '-countries.csv')
 		print colorama.Fore.RED, 'Saving CSV countries\' file', filename, colorama.Fore.RESET
 		writer = csv.writer(open(outputfilename, 'w'))
@@ -73,5 +73,6 @@ def exportInstagramURL(args):
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
+	# TODO add CLI for methods
 	exportInstagramURL(args)
 	# groupPlaces(args)
