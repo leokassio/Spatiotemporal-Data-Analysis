@@ -8,7 +8,10 @@
 # ============================================================================================
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import time
+import Queue
 import random
 import httplib
 import colorama
@@ -17,16 +20,13 @@ import datetime
 import urllib2
 from tqdm import tqdm
 from threading import Thread
-import Queue
 from selenium.webdriver import Firefox
 from selenium.webdriver import PhantomJS
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 def createDriver():
 	try:
-		driver = PhantomJS('./phantomjs')
+		driver = PhantomJS('libs/phantomjs')
 	except:
 		driver = PhantomJS()
 	return driver
@@ -120,15 +120,15 @@ def define_url():
 	try:
 		threadBufferSize = int(args[1])
 	except:
-		print colorama.Fore.RED, 'Default Thread Pool Size: 10', colorama.Fore.RESET
-		threadBufferSize = 10
+		threadBufferSize = 1
+		print colorama.Fore.RED, 'Default Thread Pool:', threadBufferSize, colorama.Fore.RESET
 	try:
 		if args[2] == 'restart':
 			restartFlag = True
 	except IndexError:
 		restartFlag = False
 
-	outputFilename = 'output/' + input_file_path.replace('.csv', '-output.csv')
+	outputFilename = input_file_path.replace('.csv', '-url-resolved.csv')
 
 	setUrlDefined = loadDefinedPlaces(outputFilename)
 	print colorama.Back.RED+colorama.Fore.YELLOW+str(len(setUrlDefined))+' URLs already defined! Lets Rock more now...'+colorama.Back.RESET+colorama.Fore.RESET
@@ -169,7 +169,7 @@ def define_url():
 		t.daemon = True
 		t.start()
 
-	for line in tqdm(input_file, desc='Defining URLs', total=numLines, initial=initialLine, leave=True, dynamic_ncols=True):
+	for line in tqdm(input_file, desc='Defining URLs', disable=True, total=numLines, initial=initialLine, leave=True, dynamic_ncols=True):
 		linesplited = line.replace('\n', '').split(',')
 		try:
 			id_data = linesplited[0].encode('utf-8')

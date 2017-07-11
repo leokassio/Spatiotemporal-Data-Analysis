@@ -44,6 +44,7 @@ def exportInstagramURL(args):
 		inputfile = open(filename, 'r')
 		outputfile = open(filename.replace('.csv', '-url.csv'), 'w')
 		lineBuffer = list()
+		invalidSample = 0
 		for line in tqdm(inputfile, desc='Collecting URL\'s'):
 			try:
 				sample = eval(line.replace('\n', ''))
