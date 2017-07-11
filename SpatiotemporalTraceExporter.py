@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+
 import csv
 import sys
 import datetime
 from tqdm import tqdm
 
 def loadDataset(inputfilenames):
+	# actually it is loading the entire dataset to sort the dataset - too expensive
+	# instead, we should be able to save in temp files according to months/weeks
+	# before export the main outout file.
 	dataset = list()
 	print '[ATTENTION] lat and lng coords are inverted!'
 	for n, inputfilename in enumerate(inputfilenames):
