@@ -20,13 +20,12 @@ import datetime
 import urllib2
 from tqdm import tqdm
 from threading import Thread
-from selenium.webdriver import Firefox
 from selenium.webdriver import PhantomJS
 
 
-def createDriver():
+def createDriver(driverPath='libs/phantomjs'):
 	try:
-		driver = PhantomJS('libs/phantomjs')
+		driver = PhantomJS(driverPath) # currently implemented only using phantomjs
 	except:
 		driver = PhantomJS()
 	return driver
@@ -60,8 +59,8 @@ def resolveCheckin(driver, id_data, url, idThread):
 		print 'generic exception', str(e)
 	return None # id_data + ',' + url + ',' + 'None'
 
-def resolveCheckinRun(urlBuffer, saveBuffer, idThread):
-	driver = createDriver() # in case of PhantomJS not available, we can use Firefox()
+def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
+	driver = createDriver(driverPath)
 	invalidStreak = 0
 	while True:
 		try:
@@ -80,7 +79,7 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread):
 				driver.quit()
 				invalidStreak = 0
 				time.sleep(60)
-				driver = createDriver() # in case of PhantomJS not available, we can use Firefox()
+				driver = createDriver(driverPath)
 		except Queue.Empty:
 			break
 	driver.quit()
@@ -91,7 +90,7 @@ def saveCheckinRun(outputFilename, saveBuffer):
 	f = open(outputFilename, 'a', 0)
 	while True:
 		try:
-			r = saveBuffer.get(timeout=60)
+			r = saveBuffer.get(timeout=120)
 			if r == 'finish':
 				saveBuffer.task_done()
 				break
@@ -103,19 +102,20 @@ def saveCheckinRun(outputFilename, saveBuffer):
 	f.close()
 
 def loadDefinedPlaces(outputFilename):
-	setUrlDefined = set()
+	urlsDefined = set()
 	try:
 		outputfile = open(outputFilename, 'r')
 		for line in outputfile:
 			linesplited = line.replace('\n', '').split(',')
-			setUrlDefined.add(linesplited[0])
+			urlsDefined.add(linesplited[0])
 		outputfile.close()
 	except IOError:
-		print colorama.Fore.RED+colorama.Back.WHITE+'   ¯\_(ツ)_/¯ NO OUTPUT FILE FOUND    '+colorama.Fore.RESET+colorama.Back.RESET
-	return setUrlDefined
+		print colorama.Fore.RED+colorama.Back.WHITE, '   ¯\_(ツ)_/¯ NO OUTPUT FILE FOUND', colorama.Fore.RESET+colorama.Back.RESET
+	return urlsDefined
 
-def define_url():
-	urlBufferSize = 10000
+def main():
+	printHeader()
+	urlBufferSize = 5000
 	args = sys.argv[1:]
 	input_file_path = args[0]
 	try:
@@ -124,15 +124,14 @@ def define_url():
 		threadBufferSize = 1
 		print colorama.Fore.RED, 'Default Thread Pool:', threadBufferSize, colorama.Fore.RESET
 	try:
-		if args[2] == 'restart':
-			restartFlag = True
+		driverPath = args[2]
 	except IndexError:
-		restartFlag = False
+		driverPath='libs/phantomjs'
 
 	outputFilename = input_file_path.replace('.csv', '-resolved.csv')
 
-	setUrlDefined = loadDefinedPlaces(outputFilename)
-	print colorama.Back.RED+colorama.Fore.YELLOW+str(len(setUrlDefined))+' URLs already defined! Lets Rock more now...'+colorama.Back.RESET+colorama.Fore.RESET
+	urlsDefined = loadDefinedPlaces(outputFilename)
+	print colorama.Back.RED+colorama.Fore.YELLOW, len(urlsDefined), ' URLs already defined! Lets Rock more now...', colorama.Back.RESET+colorama.Fore.RESET
 
 	try:
 		input_file = open(input_file_path, 'r')						# file with url checkins  to be resolved
@@ -142,23 +141,6 @@ def define_url():
 		print colorama.Fore.RED+colorama.Back.WHITE+'   NO PLACE DATASET (⊙_☉) IMPOSSIBLE TO PROCEED...  '+colorama.Fore.RESET+colorama.Back.RESET
 		exit()
 
-	initialLine = 0
-	if restartFlag: # quickly restart - initialize the form the line of last sample registered
-		collectedSamples = set(setUrlDefined)
-		for line in tqdm(input_file, desc='Restarting Collector', total=numLines, leave=True, dynamic_ncols=True):
-			initialLine += 1
-			linesplited = line.replace('\n', '').split(',')
-			try:
-				id_data = linesplited[0].encode('utf-8')
-				if len(collectedSamples) > 0:
-					collectedSamples.remove(id_data)
-				else:
-					break
-			except IndexError:
-				continue
-			except KeyError:
-				continue
-
 	urlBuffer = Queue.Queue(maxsize=urlBufferSize)
 	saveBuffer = Queue.Queue()
 
@@ -166,15 +148,17 @@ def define_url():
 	t.daemon = True
 	t.start()
 	for i in range(threadBufferSize):
-		t = Thread(target=resolveCheckinRun, args=[urlBuffer, saveBuffer, i])
+		t = Thread(target=resolveCheckinRun, args=[urlBuffer, saveBuffer, i, driverPath])
 		t.daemon = True
 		t.start()
 
-	for line in tqdm(input_file, desc='Defining URLs', disable=True, total=numLines, initial=initialLine, leave=True, dynamic_ncols=True):
+	for line in tqdm(input_file, desc='Defining URLs', disable=False, total=numLines, leave=True, dynamic_ncols=True):
 		linesplited = line.replace('\n', '').split(',')
 		try:
 			id_data = linesplited[0].encode('utf-8')
-			if id_data in setUrlDefined:
+			if id_data in urlsDefined:
+				urlsDefined.remove(id_data)
+				print len(urlsDefined)
 				continue
 			url = linesplited[1].encode('utf-8')
 			if 'http://' not in url and 'https://' not in url:
@@ -195,10 +179,6 @@ def printHeader():
 	print '█▀▀ █▀▀█ █▀▀█ █░░░█ █░░ █▀▀ █▀▀█ '
 	print '█░░ █▄▄▀ █▄▄█ █▄█▄█ █░░ █▀▀ █▄▄▀ '
 	print '▀▀▀ ▀░▀▀ ▀░░▀ ░▀░▀░ ▀▀▀ ▀▀▀ ▀░▀▀ '
-
-def main():
-	printHeader()
-	define_url()
 
 if __name__ == "__main__":
 	main()
