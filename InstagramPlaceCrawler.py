@@ -38,6 +38,7 @@ def resolveCheckin(driver, id_data, url, idThread):
 		placetag = driver.find_element_by_class_name('_kul9p')
 		placeurl = placetag.get_attribute('href').encode('utf-8')
 		placename = placetag.get_attribute('title').encode('utf-8')
+		placename = placename.replace(',', ';')
 
 		usernametag = driver.find_element_by_class_name('_4zhc5')
 		username = usernametag.get_attribute('title').encode('utf-8')
@@ -90,7 +91,7 @@ def saveCheckinRun(outputFilename, saveBuffer):
 	f = open(outputFilename, 'a', 0)
 	while True:
 		try:
-			r = saveBuffer.get(timeout=120)
+			r = saveBuffer.get(timeout=60)
 			if r == 'finish':
 				saveBuffer.task_done()
 				break
@@ -114,7 +115,7 @@ def loadDefinedPlaces(outputFilename):
 	return setUrlDefined
 
 def define_url():
-	urlBufferSize = 1000
+	urlBufferSize = 10000
 	args = sys.argv[1:]
 	input_file_path = args[0]
 	try:
@@ -128,7 +129,7 @@ def define_url():
 	except IndexError:
 		restartFlag = False
 
-	outputFilename = input_file_path.replace('.csv', '-url-resolved.csv')
+	outputFilename = input_file_path.replace('.csv', '-resolved.csv')
 
 	setUrlDefined = loadDefinedPlaces(outputFilename)
 	print colorama.Back.RED+colorama.Fore.YELLOW+str(len(setUrlDefined))+' URLs already defined! Lets Rock more now...'+colorama.Back.RESET+colorama.Fore.RESET
