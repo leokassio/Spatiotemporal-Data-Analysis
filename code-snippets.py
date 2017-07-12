@@ -1,0 +1,347 @@
+# -*- coding: utf-8 -*-
+# ============================================================================================
+# Kassio Machado - GNU Public License - 2014-08-10
+# PhD candidate on Science Computing - UFMG/Brazil
+# Python snippets to help data plots and data manipulation
+# This file contains codes used during my data analysis
+# using Python, UNIX (Linux and MacOS), MongoDB and git.
+# The file provides a hack sheet of frequently used queries,
+# bash commands and codes.
+# ============================================================================================
+
+# ============================================================================================
+# git commands
+# ============================================================================================
+git add filename 					-> add file to commit
+git commit -m "commit text"			-> make a commit
+git status							-> show status of files available to commit
+git log 							->
+git reflog 							-> indexes of commits (allows to you to revert to a specific commit)
+git reset --hard hash-commit		-> reset to specific
+git checkout -b brachname			-> create a new branch
+git push origin master				-> publish the commits commit on master brach
+git remote add origin link			-> add remote repository
+git clone link						-> clone remote repository
+git remote -v 						-> show remote repositories connected
+git pull							-> update your local repository to the newest commit
+git diff branch1 branch2			-> preview the differences
+
+# ============================================================================================
+# Unix Bash Code Snippets
+# ============================================================================================
+head -10 filename # top lines of file
+tail -10 filename # bottom lines of file
+unzip -l filename # list files of zip file
+zip -r zipfile filetoadd # add a new file to zipfile that already exists
+ps -aux					# list of process running
+ps -o etime= -p PID		# time elapsed since the creation of process
+ps -o stime,time 6198 	# datetime of process creation
+cat /proc/meminfo 		# current status of memory
+date 					# simple current datetime os system
+
+# ============================================================================================
+# Python Code Snippets
+# ============================================================================================
+
+# Funny error messages
+print '¯\_(ツ)_/¯ sometines Exceptions happen bro'
+print '(⊙_☉) A wild EXCEPTION appears'
+print '(⊙_☉) A wild KeyError appears\nI have to terminate, sorry ¯\_(ツ)_/¯'
+
+# exception tracker
+except Exception as e:
+	print 'init error', sys.exc_info()
+
+# get configs from file
+from ConfigParser import SafeConfigParser
+parser = SafeConfigParser()				# initalizing the parser
+parser.read('simple.ini')					# loading config file
+print parser.get('bug_tracker', 'url') 	# loading the file with section and the propertie name
+
+# write configs on file
+parser.add_section('bug_tracker')
+parser.set('bug_tracker', 'url', 'http://aliceinwonderland.ddns.me')
+f = open('simple.ini', 'w')
+parser.write(f)
+
+# get iso week number
+datetime.date(2010, 6, 16).isocalendar()[1]
+# get the day of the year
+datetime.datetime.now().timetuple().tm_yday
+
+# print each second element
+print range(20)[::2]
+
+# ============================================================================================
+# Matplotlib - Pyplot Snippets
+# ============================================================================================
+
+# cool legend wih opacity adjust
+legend = plt.legend(fancybox=True, fontsize='x-large', fontweight='bold', loc=4)
+legend.get_frame().set_alpha(0.25)
+
+# fontsize of axis ticks
+plt.tick_params(axis='x', labelsize=15)
+
+# fontsize of title
+plt.xlabel('xlabel', fontsize=18)
+
+# xkcd plot style - maybe need a additional
+# script to install additional dependencies such as fonts
+matplotlib.use('QT4Agg')
+plt.xkcd()
+
+# ggplot style - similar to R
+matplotlib.use('QT4Agg')
+plt.style.use('ggplot')
+plt.style.available
+
+# matplotlib plot embedded on jupyter notebook
+%matplotlib inline
+
+# reload custom .py files on jupyter notebooks
+%load_ext autoreload
+%autoreload 2
+
+# master title for multiple plots in the same figure
+plt.suptitle(placename+'\n'+placeid)
+
+# adjust the layout without superposition of labels
+plt.tight_layout()
+plt.subplots_adjust()
+
+# Pad margins so that markers don't get clipped by the axes
+plt.margins(0.2)
+
+# Tweak spacing to prevent clipping of tick-labels
+plt.subplots_adjust(bottom=0.15)
+
+# Standard Error Deviation using line'
+plt.fill_between(range(len(data)), downbound, upbound, facecolor='yellow', alpha=0.5) # y, downbound, upbound
+plt.plot(range(len(data)), data, linewidth=2.0, color='red', label='data')
+
+# get the list of markers and colors availables according to spectrum of data
+markers = matplotlib.markers.MarkerStyle.filled_markers
+colors = matplotlib.cm.rainbow((numpy.linspace(0, 1, len(sortedClasses))))
+
+# map the colormap in a scale
+import matplotlib as mpl
+import matplotlib.cm as cm
+norm = mpl.colors.Normalize(vmin=-20, vmax=10)
+cmap = cm.hot
+m = cm.ScalarMappable(norm=norm, cmap=cmap)
+rgb = m.to_rgba(10) # (1, 1, 0)
+
+# convert to hex
+from matplotlib.colors import rgb2hex
+rgb2hex(rgb)
+
+# convert to hex
+from colormap import rgb2hex
+rgb2hex(0, 128, 64)
+
+# seting the size and text of ticks on x axis
+plt.xticks(x, labels, rotation='vertical')
+
+# hiding x axis
+fig.axes.get_xaxis().set_visible(False)
+plt.axes().axes.get_xaxis().set_visible(False)
+
+# title and axis text
+ax.set_yscale('log')
+plt.yscale('log', nonposy='clip')
+plt.xlabel('Time (day)', fontsize=16)
+plt.title('Speed')
+plt.tick_params(axis='x', labelsize=15)
+plt.tick_params(axis='y', labelsize=15)
+
+# hidding specific labels of axis
+yticks = ax.yaxis.get_major_ticks()
+for x in range(0, len(yticks)):
+	yticks[x].label1.set_visible(False)
+
+# plot a matrix of colors with colorbar
+fig = plt.matshow(dictEntropyResults[temperature])
+fig.set_cmap('hot')
+plt.xticks(range(0,12), range(0,24,2))
+plt.yticks(range(0,7),['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'])
+plt.colorbar(ticks=numpy.arange(2,5.5,0.5))
+
+# force shared axis label
+fig.text(0.5, 0.04, 'common xlabel', ha='center', va='center')
+fig.text(0.06, 0.5, 'common ylabel', ha='center', va='center', rotation='vertical')
+
+# basic plot template
+fig, ax = plt.subplots()
+ax.plot(busWeekDays, '-or', label='bus')
+ax.grid(True)
+legend = plt.legend(fancybox=True)
+legend.get_frame().set_alpha(0.25)
+plt.show()
+
+# basic plot errorbar template
+std = numpy.std(values)
+margin = float(tempmOffsset/2)
+plt.errorbar([x + margin for x in labels], values, yerr=std)
+plt.bar(labels, data, yerr=dataplot_error, error_kw=dict(ecolor='k', elinewidth=2, capsize=4))
+
+# basic scatter plot template
+plt.scatter(range(0,len(values)), values, c=colors, s=15, label='bad-traffic-weather')
+
+# setting the color of specific lines automatically
+fig, ax = plt.subplots()
+cmap = plt.get_cmap('YlOrRd')
+norm = matplotlib.colors.Normalize(clip=False, vmin=min(labels), vmax=max(labels))
+scalarMap = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
+for x in labels:
+	colorValue = scalarMap.to_rgba(labels)
+	plt.plot(sorted(dictWeatherUsers[measure], reverse=True), color=colorValue, linewidth=2, label=str(measure))
+
+# main snippet
+if __name__ == "__main__":
+	main()
+
+# ============================================================================================
+# NumPy Code Snipets
+# ============================================================================================
+# percentile
+np.percentile(data, 25) # 1st percentile
+np.percentile(data, 75) # 3st percentile
+
+# fill the interval with n samples
+np.linspace(min,max,n)
+
+# histogram, pdf, cdf and ccdf
+data = [d[k] for k in d]
+pdf, edges = numpy.histogram(data, bins=numpy.arange(0, 1, 0.1))
+s = float(sum(pdf))
+probs = [i/s for i in pdf]
+cdf = numpy.cumsum(probs)
+ccdf = 1 - cdf
+plt.plot(edges[:-1], ccdf, '-sb', linewidth=2, label='Taxis')
+
+# ============================================================================================
+# Python Additional Modules Snippets
+# ============================================================================================
+# tqdm - Progress Bar
+from tqdm import tqdm
+for i tqdm(range(10), desc='Loading', leave=True)
+
+# PrettyTable - Format console output in tables
+from prettytable import PrettyTable
+t = PrettyTable(['Name', '# Reference'])
+t.add_row(['Alice in Wonderland', 420])
+t.add_row(['King Leonidas', 300])
+print t
+
+# ============================================================================================
+# Pickle
+# ============================================================================================
+import cPickle as pickle
+pickle.dump(dictGraphs, open( 'pickleDict.p', 'wb' ))
+pickleDict = pickle.load(open( 'pickleDict.p', 'rb' ))
+
+# os operations
+import os.path
+os.path.isfile(fname)	# test if file already exists
+os.listdir('.') 		# list of files and folders
+# native sound on linux
+os.system('play --no-show-progress --null --channels 1 synth 0.1 sine 100')
+
+# ============================================================================================
+# NLTK module and Natural Language Processing Code Snippets
+# ============================================================================================
+from nltk.corpus import stopwords
+import string
+punctuation = list(string.punctuation)
+stpw = stopwords.words('english')
+
+# TextBlob Snippets - http://textblob.readthedocs.org/
+# Install and Setup Extra Contents
+pip install -U textblob
+python -m textblob.download_corpora
+from textblob import TextBlob
+from textblob.sentiments import NaiveBayesAnalyzer
+t = TextBlob('Hello World')
+t.detect_language()
+t.translate(from_lang='en', to='pt-br')
+t.sentiment # Sentiment(polarity=1.0, subjectivity=1.0)
+t = TextBlob("I love this library", analyzer=NaiveBayesAnalyzer())
+t.sentiment # Sentiment(classification='pos', p_pos=0.7996209910191279, p_neg=0.2003790089808724)
+
+# ============================================================================================
+# Python Spoof Mac - Masking the mac addresss
+# ============================================================================================
+pip install # spoofmac - change mac address for tests purposes ¯\_(ツ)_/¯
+spoof-mac list --wifi
+sudo spoof-mac randomize wi-fi
+
+
+# ============================================================================================
+# PyMongo (Mongodb) Code Snippets
+# ============================================================================================
+# basic template
+import pymongo
+import sys
+connection = pymongo.MongoClient("mongodb://localhost")
+db = connection.school
+scores = db.scores
+try:
+	query = {'name':'leokassio'}
+	projection = {'_id':0, 'name':1}
+	d = scores.find_one(query)
+	cursor = scores.find(query, projection)
+	for doc in cursor:
+		print doc
+except Exception as e:
+	print "Unexpected error:", type(e), e
+print doc
+
+# ============================================================================================
+# Mongodb Shell Code Snippets
+# ============================================================================================
+# add user on admin database and private
+# OBS: config file on /etc/mongod.conf should be configured according to bind-address, port and authenticated mode
+db.createUser({user:'adm_leokassio', pwd:'xxx', roles:[{role:'userAdminAnyDatabase', db:'admin'}]})
+db.createUser({user:'leokassio', pwd:'xxx', roles:[{role:'readWrite', db:'dbname'}]})
+
+# drop user
+db.dropUser("leokassio", {w: "majority", wtimeout: 5000})
+
+# collection statics and information
+db.collection.stats()
+
+#distinct values on field of query
+db.collection.distinct('field', {query})
+
+# collection size and indexes size
+db.collection.totalIndexSize()
+
+# aggregations with criteria
+db.weather_underground.aggregate([{$match:{city:'new-york'}}, {$group:{_id:'$city', max_data:{$max:'$temperature'}}}], {allowDiskUse:true})
+db.social_media_geolocated.aggregate([{$match:{city:'new-york'}}, {$group:{_id:'$city', counter:{$sum:1}}}], {allowDiskUse:true})
+
+db.social_media_geolocated.find({'city':'paris'},{'_id':0, 'userid':1, 'placeid':1}, no_cursor_timeout=True
+# sort results
+db.social_media_geolocated.find({city:'new-york', date_local:{$gte:d}}, {_id:0, id_data:1, date_local:1}).sort({date_local:-1})
+
+# connect to remote database
+mongo --host 192.168.0.18 -u leokassio -p xxx --authenticationDatabase admin
+
+# basic backup commands
+mongodump -h hostname -d dbname -u leokassio -p xxx --port 27017 -c collection -o outdir
+mongorestore -h hostname filename
+
+# basic connect with authentication
+mongo --host 192.168.0.18
+use admin
+db.auth('', '')
+# bash command to start mongo with more memory and authentication activated
+ulimit -n 2048 && mongod --auth
+
+# ============================================================================================
+# Unix Bash General Hacks
+# ============================================================================================
+convert -delay 10 -loop 0 *.png animation.gif 	# gif from static images. OBS: need to install imagemagick
+cat list_commands | xargs -P 4 -n 3 python 		# pool of process with xargs. Easy paralelization
+ffmpeg -i original.mp3 -vn -acodec copy -ss 00:00:00 -t 01:00:00 first-hour.mp3 # save a portion of mp3 file
