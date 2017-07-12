@@ -158,7 +158,6 @@ def main():
 			id_data = linesplited[0].encode('utf-8')
 			if id_data in urlsDefined:
 				urlsDefined.remove(id_data)
-				print len(urlsDefined)
 				continue
 			url = linesplited[1].encode('utf-8')
 			if 'http://' not in url and 'https://' not in url:
