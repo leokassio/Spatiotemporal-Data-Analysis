@@ -117,16 +117,24 @@ def main():
 	printHeader()
 	urlBufferSize = 5000
 	args = sys.argv[1:]
+	if len(args) == 0:
+		print colorama.Fore.RED, 'CLI example: python InstagramPlaceCrawler.py inputfile [n_threads, ISO-Alpha 2 Country, libs/phantomjs]'
 	input_file_path = args[0]
 	try:
 		threadBufferSize = int(args[1])
 	except:
 		threadBufferSize = 1
 		print colorama.Fore.RED, 'Default Thread Pool:', threadBufferSize, colorama.Fore.RESET
+
 	try:
-		driverPath = args[2]
+		isoCountryCode = args[2]
 	except IndexError:
-		driverPath='libs/phantomjs'
+		isoCountryCode = None
+
+	try:
+		driverPath = args[3]
+	except IndexError:
+		driverPath = 'libs/phantomjs'
 
 	outputFilename = input_file_path.replace('.csv', '-resolved.csv')
 
@@ -158,6 +166,9 @@ def main():
 			id_data = linesplited[0].encode('utf-8')
 			if id_data in urlsDefined:
 				urlsDefined.remove(id_data)
+				continue
+			country = linesplited[4].encode('utf-8')
+			if isoCountryCode and isoCountryCode != country:
 				continue
 			url = linesplited[1].encode('utf-8')
 			if 'http://' not in url and 'https://' not in url:
