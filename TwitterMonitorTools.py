@@ -55,8 +55,8 @@ def exportInstagramURL(args):
 				place_type = sample['place_type']
 				country = sample['country']
 				line = id_data + ',' + url + ',' + place_url + ','
-				line += place_name.replace(',', ';') + ',' + country
-				line += ',' + country + '\n'
+				line += place_name.replace(',', ';') + ','
+				line += country + '\n'
 				lineBuffer.append(line)
 				if lineBuffer >= 100000:
 					for l in lineBuffer:
