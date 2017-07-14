@@ -97,7 +97,7 @@ if __name__ == "__main__":
 		script_filename, oauth_profile, configName = sys.argv
 		ckey, csecret = TwitterMonitor.loadAppOAuth(configparser)
 		atoken, asecret = TwitterMonitor.loadUserOAuth(configparser, sys.argv[1])
-		locationLabel, cooordinates = TwitterMonitor.loadBoundBox(configparser, sys.argv[2])
+		locationLabel, cooordinates = TwitterMonitor.loadTwitterBoundBox(configparser, sys.argv[2])
 	except ValueError:
 		print 'PLEASE INFORM THE INPUT DATA: python twitter-monitor-geolocation.py 1 location-name (New-York)'
 		print 'Please check the config names and bounding boxes available on twitter-monitor.cfg file'
