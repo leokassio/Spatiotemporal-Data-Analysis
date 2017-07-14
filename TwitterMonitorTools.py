@@ -77,6 +77,9 @@ def exportPlaceURLByCountry(args):
 			outputfile.write(l)
 
 def exportPlaceURLByBoundBox(args):
+	""" Exports the files containing the URLs from samples locations according
+	to Instagram. The function requires the pre-defined bounding box on
+	TwitterMonitor.cfg. """
 	locationName = args[0]
 	inputfiles = args[1:]
 	configparser = TwitterMonitor.loadConfigParser('TwitterMonitor.cfg')
