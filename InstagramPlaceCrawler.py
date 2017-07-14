@@ -46,7 +46,7 @@ def resolveCheckin(driver, id_data, url, idThread):
 	except selenium.common.exceptions.NoSuchElementException:
 		try:
 			error = driver.find_element_by_class_name('error-container')
-			return id_data + ',' + url + ',' + 'not-available'
+			return id_data + ',' + url + ',not-available,not-available,not-available'
 		except selenium.common.exceptions.NoSuchElementException:
 			pass
 	except AttributeError:
@@ -99,7 +99,6 @@ def saveCheckinRun(outputFilename, saveBuffer):
 		except Queue.Empty:
 			print 'Save-Thread Timeout!'
 	print 'Finishing Save-Thread...'
-	f.close()
 
 def loadDefinedPlaces(outputFilename):
 	urlsDefined = set()
@@ -125,14 +124,8 @@ def main():
 	except:
 		threadBufferSize = 1
 		print colorama.Fore.RED, 'Default Thread Pool:', threadBufferSize, colorama.Fore.RESET
-
 	try:
-		isoCountryCode = args[2]
-	except IndexError:
-		isoCountryCode = None
-
-	try:
-		driverPath = args[3]
+		driverPath = args[2]
 	except IndexError:
 		driverPath = 'libs/phantomjs'
 
@@ -166,9 +159,6 @@ def main():
 			id_data = linesplited[0].encode('utf-8')
 			if id_data in urlsDefined:
 				urlsDefined.remove(id_data)
-				continue
-			country = linesplited[4].encode('utf-8')
-			if isoCountryCode and isoCountryCode != country:
 				continue
 			url = linesplited[1].encode('utf-8')
 			if 'http://' not in url and 'https://' not in url:
