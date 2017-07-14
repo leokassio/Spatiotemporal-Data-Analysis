@@ -43,17 +43,28 @@ def loadFilenameAlias(configparser, configName):
 	fa = configparser.get(configName, 'filename_alias')
 	return fa
 
+def loadTwitterBoundBox(configparser, locationName):
+    """ Loads the pre-configured bboxes. Attention, this method is focused
+    on the limitations of Twitter API for bbox, so the bbox may vary for
+    different applications. """
+    configSection = 'twitter_bbox'
+    locationLabel = configparser.get(configSection, locationName+'_label')
+    print colorama.Fore.YELLOW + 'Loading', colorama.Fore.RED + locationLabel, colorama.Fore.YELLOW + 'coordinates...' + colorama.Fore.RESET
+    lng0 = configparser.getfloat(configSection, locationName+'_lng0')
+    lngn = configparser.getfloat(configSection, locationName+'_lngn')
+    lat0 = configparser.getfloat(configSection, locationName+'_lat0')
+    latn = configparser.getfloat(configSection, locationName+'_latn')
+    coordinates = [lng0, lat0, lngn, latn]
+    print colorama.Fore.RED + locationLabel , colorama.Fore.YELLOW + 'Bounding Box', coordinates, colorama.Fore.GREEN + '[OK]' + colorama.Fore.RESET
+    return locationLabel, coordinates
+
 def loadBoundBox(configparser, locationName):
-	configSection = 'cities_bbox'
-	locationLabel = configparser.get(configSection, locationName+'_label')
-	print colorama.Fore.YELLOW + 'Loading', colorama.Fore.RED + locationLabel, colorama.Fore.YELLOW + 'coordinates...' + colorama.Fore.RESET
-	lng0 = configparser.getfloat(configSection, locationName+'_lng0')
-	lngn = configparser.getfloat(configSection, locationName+'_lngn')
-	lat0 = configparser.getfloat(configSection, locationName+'_lat0')
-	latn = configparser.getfloat(configSection, locationName+'_latn')
-	coordinates = [lng0, lat0, lngn, latn]
-	print colorama.Fore.RED + locationLabel , colorama.Fore.YELLOW + 'Bounding Box', coordinates, colorama.Fore.GREEN + '[OK]' + colorama.Fore.RESET
-	return locationLabel, coordinates
+    """ Loads the pre-configured bboxes. Created for general purpose. """
+    print colorama.Fore.YELLOW, 'Loading', colorama.Fore.RED, locationName, colorama.Fore.YELLOW, 'coordinates...' + colorama.Fore.RESET
+    configSection = 'bboxes'
+    coords = configparser.get(configSection, locationName)
+    coords = [float(c) for c in coords.split(',')]
+    return coords
 
 def plotBanner():
 	colors = [colorama.Fore.RED, colorama.Fore.YELLOW, colorama.Fore.CYAN, colorama.Fore.GREEN,
