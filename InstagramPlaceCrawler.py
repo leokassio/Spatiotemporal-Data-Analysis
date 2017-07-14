@@ -160,7 +160,7 @@ def main():
 			if id_data in urlsDefined:
 				urlsDefined.remove(id_data)
 				continue
-			url = linesplited[1].encode('utf-8')
+			url = linesplited[3].encode('utf-8')
 			if 'http://' not in url and 'https://' not in url:
 				url = 'http://' + url
 		except IndexError:
