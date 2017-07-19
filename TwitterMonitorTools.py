@@ -11,7 +11,7 @@ import datetime
 from tqdm import tqdm
 import TwitterMonitor
 
-def exportLocations(args):
+def exportPlaces(args):
 	""" Count the samples and group them according to the places indicated by
 	Twitter sample (not dependent of app - like Instagram of Foursquare). The
 	method exports two CSV files for each input file containing the places and
@@ -55,13 +55,14 @@ def exportPlaceURLByCountry(args):
 				if country != isoCodeCountry:
 					continue
 				id_data = sample['id_data']
+				id_user = sample['userid']
+				country = sample['country']
 				url = sample['urls'][-1]['expanded_url']
 				place_url = sample['place_url']
 				place_name = sample['place_name']
-				place_type = sample['place_type']
-				line = id_data + ',' + url + ',' + place_url + ','
-				line += place_name.replace(',', ';') + ','
-				line += country + '\n'
+				line = id_data + ',' + id_user + ',' + country
+				line += ',' + url + ',' + place_url
+				line += ',' + place_name.replace(',', ';') + '\n'
 				lineBuffer.append(line)
 				if lineBuffer >= 100000:
 					for l in lineBuffer:
@@ -100,18 +101,19 @@ def exportPlaceURLByBoundBox(args):
 				lng = float(sample['lat'])
 				lat = float(sample['lng'])
 				if lat >= lat0 and lat <= latn and lng >= lng0 and lng <= lngn:
-					id_data = sample['id_data']
-					id_user = sample['userid']
-					country = sample['country']
-					url = sample['urls'][-1]['expanded_url']
-					place_url = sample['place_url']
-					place_name = sample['place_name']
-					# dateutc = sample['date_original'].strftime('%y-%m-%d %H:%M:%S')
-					# place_type = sample['place_type']
-
-					line = id_data + ',' + id_user + ',' + country
-					line += ',' + url + ',' + place_url
-					line += ',' + place_name.replace(',', ';') + '\n'
+					id_data = sample['id_data'].encode('utf-8')
+					id_user = sample['userid'].encode('utf-8')
+					country = sample['country'].encode('utf-8')
+					url = sample['urls'][-1]['expanded_url'].encode('utf-8')
+					place_url = sample['place_url'].encode('utf-8')
+					place_name = sample['place_name'].encode('utf-8')
+					line = id_data
+					line += ',' + id_user
+					line += ',' + country
+					line += ',' + url
+					line += ',' + place_url
+					line += ',' + place_name.replace(',', ';')
+					line += '\n'
 					lineBuffer.append(line)
 					if lineBuffer >= 100000:
 						for l in lineBuffer:
@@ -127,9 +129,49 @@ def exportPlaceURLByBoundBox(args):
 			outputfile.write(l)
 		print '#' + str(invalidSample),'Invalid Samples'
 
+def exportPlaceURL(args):
+	""" .... """
+	inputfiles = args
+	for filename in inputfiles:
+		print colorama.Fore.RED, filename, colorama.Fore.RESET
+		inputfile = open(filename, 'r')
+		outputfile = open(filename.replace('.csv', '-url.csv'), 'w', 0)
+		lineBuffer = list()
+		invalidSample = 0
+		for line in tqdm(inputfile, desc='Exporting URL\'s', disable=False):
+			try:
+				sample = eval(line.replace('\n', ''))
+				id_data = sample['id_data'].encode('utf-8')
+				id_user = sample['userid'].encode('utf-8')
+				country = sample['country'].encode('utf-8')
+				url = sample['urls'][-1]['expanded_url'].encode('utf-8')
+				place_url = sample['place_url'].encode('utf-8')
+				place_name = sample['place_name'].encode('utf-8')
+				line = id_data
+				line += ',' + id_user
+				line += ',' + country
+				line += ',' + url
+				line += ',' + place_url
+				line += ',' + place_name.replace(',', ';')
+				line += '\n'
+				lineBuffer.append(line)
+				if lineBuffer >= 100000:
+					for l in lineBuffer:
+						outputfile.write(l)
+					lineBuffer = list()
+			except KeyError:
+				invalidSample += 1
+				continue
+			except SyntaxError:
+				invalidSample += 1
+				continue
+		for l in lineBuffer:
+			outputfile.write(l)
+		print '#' + str(invalidSample),'Invalid Samples'
+
 if __name__ == "__main__":
 	args = sys.argv[1:]
 	# TODO add CLI for methods
-	# exportPlaceURL(args)
+	exportPlaceURL(args)
 	# exportLocations(args)
-	exportPlaceURLByBoundBox(args)
+	# exportPlaceURLByBoundBox(args)

@@ -54,10 +54,11 @@ def resolveCheckin(driver, id_data, url, idThread):
 	except httplib.BadStatusLine:
 		pass
 	except urllib2.URLError, e:
-		print url, '- url open error', str(e), '#' + str(idThread)
+		# print url, '- url open error', str(e), '#' + str(idThread)
+		return 1
 	except Exception, e:
 		print 'generic exception', str(e)
-	return None # id_data + ',' + url + ',' + 'None'
+	return None
 
 def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 	driver = createDriver(driverPath)
@@ -67,15 +68,18 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 			item = urlBuffer.get(timeout=30)
 			id_data, url = item
 			line = resolveCheckin(driver, id_data, url, idThread)
-			if line != None:
+			if type(line) == str:
 				saveBuffer.put_nowait(line)
 				invalidStreak = 0
-			else:
+			elif line == 1:
+				time.sleep(ramdo.randint(1,7))
+				invalidStreak += 1
+			elif line == None:
 				invalidStreak += 1
 			urlBuffer.task_done()
 			time.sleep(random.random())
 			if invalidStreak >= 100:
-				print 'Invalid Streak on Crawler-Thread', idThread, '(1min)'
+				print colorama.Fore.RED, 'Streak of invalids URLs on Thread', idThread, colorama.Fore.RESET
 				driver.quit()
 				invalidStreak = 0
 				time.sleep(60)
@@ -83,7 +87,7 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 		except Queue.Empty:
 			break
 	driver.quit()
-	print 'Finishing Crawler-Thread', idThread, '...'
+	print colorama.Fore.RED + colorama.BACK.WHITE , 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
 	return
 
 def saveCheckinRun(outputFilename, saveBuffer):
@@ -97,8 +101,8 @@ def saveCheckinRun(outputFilename, saveBuffer):
 			f.write(r + '\n')
 			saveBuffer.task_done()
 		except Queue.Empty:
-			print 'Save-Thread Timeout!'
-	print 'Finishing Save-Thread...'
+			print colorama.Fore.RED, 'Save-Thread Timeout!', colorama.Fore.RESET
+	print colorama.Fore.RED + colorama.BACK.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.BACK.RESET
 
 def loadDefinedPlaces(outputFilename):
 	urlsDefined = set()
@@ -114,7 +118,7 @@ def loadDefinedPlaces(outputFilename):
 
 def main():
 	printHeader()
-	urlBufferSize = 5000
+	urlBufferSize = 100
 	args = sys.argv[1:]
 	if len(args) == 0:
 		print colorama.Fore.RED, 'CLI example: python InstagramPlaceCrawler.py inputfile [n_threads, ISO-Alpha 2 Country, libs/phantomjs]'
