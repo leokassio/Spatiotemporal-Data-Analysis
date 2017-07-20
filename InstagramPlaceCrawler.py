@@ -32,7 +32,6 @@ def createDriver(driverPath='libs/phantomjs'):
 
 def resolveCheckin(driver, id_data, url, idThread):
 	try:
-		# print 'resolving', url
 		driver.get(url)
 		placetag = driver.find_element_by_class_name('_kul9p')
 		placeurl = placetag.get_attribute('href').encode('utf-8')
@@ -50,11 +49,13 @@ def resolveCheckin(driver, id_data, url, idThread):
 		except selenium.common.exceptions.NoSuchElementException:
 			pass
 	except AttributeError:
+		print 'AttributeError Exception'
 		pass
-	except httplib.BadStatusLine:
+	except httplib.BadStatusLine, e:
+		print url, str(e), '#' + str(idThread)
 		pass
 	except urllib2.URLError, e:
-		# print url, '- url open error', str(e), '#' + str(idThread)
+		print url, str(e), '#' + str(idThread)
 		return 1
 	except Exception, e:
 		print 'generic exception', str(e)
@@ -63,6 +64,7 @@ def resolveCheckin(driver, id_data, url, idThread):
 def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 	driver = createDriver(driverPath)
 	invalidStreak = 0
+	invalidStreakURL = 0
 	while True:
 		try:
 			item = urlBuffer.get(timeout=30)
@@ -71,18 +73,22 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 			if type(line) == str:
 				saveBuffer.put_nowait(line)
 				invalidStreak = 0
+				invalidStreakURL = 0
 			elif line == 1:
-				time.sleep(ramdo.randint(1,7))
 				invalidStreak += 1
+				invalidStreakURL += 1
+				if invalidStreakURL >= 20:
+					invalidStreak = 100
+					invalidStreakURL = 0
 			elif line == None:
 				invalidStreak += 1
 			urlBuffer.task_done()
 			time.sleep(random.random())
 			if invalidStreak >= 100:
-				print colorama.Fore.RED, 'Streak of invalids URLs on Thread', idThread, colorama.Fore.RESET
+				print colorama.Fore.RED, 'Restarting Web-Driver at Thread', idThread, colorama.Fore.RESET
 				driver.quit()
 				invalidStreak = 0
-				time.sleep(60)
+				time.sleep(60 + random.randint(1,31))
 				driver = createDriver(driverPath)
 		except Queue.Empty:
 			break
