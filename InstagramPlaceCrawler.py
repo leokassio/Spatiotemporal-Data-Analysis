@@ -63,37 +63,48 @@ def resolveCheckin(driver, id_data, url, idThread):
 
 def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 	driver = createDriver(driverPath)
+	emptyStreak = 0
 	invalidStreak = 0
 	invalidStreakURL = 0
 	while True:
 		try:
-			item = urlBuffer.get(timeout=30)
-			id_data, url = item
-			line = resolveCheckin(driver, id_data, url, idThread)
-			if type(line) == str:
-				saveBuffer.put_nowait(line)
-				invalidStreak = 0
-				invalidStreakURL = 0
-			elif line == 1:
-				invalidStreak += 1
-				invalidStreakURL += 1
-				if invalidStreakURL >= 20:
-					invalidStreak = 100
-					invalidStreakURL = 0
-			elif line == None:
-				invalidStreak += 1
-			urlBuffer.task_done()
-			time.sleep(random.random())
-			if invalidStreak >= 100:
-				print colorama.Fore.RED, 'Restarting Web-Driver at Thread', idThread, colorama.Fore.RESET
-				driver.quit()
-				invalidStreak = 0
-				time.sleep(60 + random.randint(1,31))
-				driver = createDriver(driverPath)
+			item = urlBuffer.get(timeout=60)
 		except Queue.Empty:
-			break
+			if emptyStreak < 3:
+				emptyStreak += 1
+			else:
+				print colorama.Fore.RED, 'Empty Streak Limit at #', idThread, colorama.Fore.RESET
+				break
+		try:
+			id_data, url = item
+		except ValueError:
+			if item == 'finish':
+				urlBuffer.task_done()
+				break
+		line = resolveCheckin(driver, id_data, url, idThread)
+		if type(line) == str:
+			saveBuffer.put_nowait(line)
+			invalidStreak = 0
+			invalidStreakURL = 0
+		elif line == 1:
+			invalidStreak += 1
+			invalidStreakURL += 1
+			if invalidStreakURL >= 20:
+				invalidStreak = 100
+				invalidStreakURL = 0
+		elif line == None:
+			invalidStreak += 1
+		urlBuffer.task_done()
+		time.sleep(random.random())
+		if invalidStreak >= 100:
+			t = 60 + random.randint(1,31)
+			print colorama.Fore.RED, 'Restarting Web-Drive at #', idThread, '(' + str(t) + ')', colorama.Fore.RESET
+			driver.quit()
+			invalidStreak = 0
+			time.sleep(t)
+			driver = createDriver(driverPath)
 	driver.quit()
-	print colorama.Fore.RED + colorama.BACK.WHITE , 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
+	print colorama.Fore.RED + colorama.BACK.WHITE, 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
 	return
 
 def saveCheckinRun(outputFilename, saveBuffer):
@@ -107,8 +118,8 @@ def saveCheckinRun(outputFilename, saveBuffer):
 			f.write(r + '\n')
 			saveBuffer.task_done()
 		except Queue.Empty:
-			print colorama.Fore.RED, 'Save-Thread Timeout!', colorama.Fore.RESET
-	print colorama.Fore.RED + colorama.BACK.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.BACK.RESET
+			print colorama.Fore.RED + colorama.BACK.WHITE, 'Save-Thread Timeout!', colorama.Fore.RED + colorama.Back.RESET
+	print colorama.Fore.BLUE + colorama.Back.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.BACK.RESET
 
 def loadDefinedPlaces(outputFilename):
 	urlsDefined = set()
@@ -173,10 +184,11 @@ def main():
 			url = linesplited[3].encode('utf-8')
 			if 'http://' not in url and 'https://' not in url:
 				url = 'http://' + url
+			urlBuffer.put((id_data, url))
 		except IndexError:
 			continue
-		urlBuffer.put((id_data, url))
-	urlBuffer.join()
+	for i in range(threadBufferSize):
+		urlBuffer.put('finish')
 	saveBuffer.put('finish')
 	saveBuffer.join()
 	print colorama.Fore.GREEN, 'GG bro ;)', colorama.Fore.RESET

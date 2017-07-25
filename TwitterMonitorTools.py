@@ -78,9 +78,11 @@ def exportPlaceURLByCountry(args):
 			outputfile.write(l)
 
 def exportPlaceURLByBoundBox(args):
-	""" Exports the files containing the URLs from samples locations according
+	"""
+	Exports the files containing the URLs from samples locations according
 	to Instagram. The function requires the pre-defined bounding box on
-	TwitterMonitor.cfg. """
+	TwitterMonitor.cfg.
+	"""
 	locationName = args[0]
 	inputfiles = args[1:]
 	configparser = TwitterMonitor.loadConfigParser('TwitterMonitor.cfg')
@@ -107,12 +109,14 @@ def exportPlaceURLByBoundBox(args):
 					url = sample['urls'][-1]['expanded_url'].encode('utf-8')
 					place_url = sample['place_url'].encode('utf-8')
 					place_name = sample['place_name'].encode('utf-8')
+					date_local = sample['date_local']
 					line = id_data
 					line += ',' + id_user
 					line += ',' + country
 					line += ',' + url
 					line += ',' + place_url
 					line += ',' + place_name.replace(',', ';')
+					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
 					line += '\n'
 					lineBuffer.append(line)
 					if lineBuffer >= 100000:
@@ -130,7 +134,7 @@ def exportPlaceURLByBoundBox(args):
 		print '#' + str(invalidSample),'Invalid Samples'
 
 def exportPlaceURL(args):
-	""" .... """
+	""" General - Samples independently of city/country """
 	inputfiles = args
 	for filename in inputfiles:
 		print colorama.Fore.RED, filename, colorama.Fore.RESET
@@ -147,12 +151,14 @@ def exportPlaceURL(args):
 				url = sample['urls'][-1]['expanded_url'].encode('utf-8')
 				place_url = sample['place_url'].encode('utf-8')
 				place_name = sample['place_name'].encode('utf-8')
+				date_local = sample['date_local']
 				line = id_data
 				line += ',' + id_user
 				line += ',' + country
 				line += ',' + url
 				line += ',' + place_url
 				line += ',' + place_name.replace(',', ';')
+				line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
 				line += '\n'
 				lineBuffer.append(line)
 				if lineBuffer >= 100000:
@@ -172,6 +178,6 @@ def exportPlaceURL(args):
 if __name__ == "__main__":
 	args = sys.argv[1:]
 	# TODO add CLI for methods
-	exportPlaceURL(args)
+	# exportPlaceURL(args)
 	# exportLocations(args)
-	# exportPlaceURLByBoundBox(args)
+	exportPlaceURLByBoundBox(args)
