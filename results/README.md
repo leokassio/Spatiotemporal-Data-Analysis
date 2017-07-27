@@ -4,3 +4,5 @@
 - weather-histogram-temperatures-CITY.png: histogram of daily mean temperature
 - weather-histogram-differences-CITY.png: histogram of the differences among min and max temperature in the same day
 - weather-timeline-CITY.png: timeline of samples of weather
+
+- social-timeline-CITY.png: timeline of samples of instagram geolocated photos
