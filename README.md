@@ -1,5 +1,9 @@
 # Spatiotemporal Data Analysis
-(on going)
+
+![alt text](http://data.whicdn.com/images/69304651/large.gif "Welcome!")
+
+(This is a work in progress)
+
 Set of tools for exploratory data analysis using Twitter, Instagram and Foursquare data.
 
 ### Data Acquisition
