@@ -33,12 +33,12 @@ def createDriver(driverPath='libs/phantomjs'):
 def resolveCheckin(driver, id_data, url, idThread):
 	try:
 		driver.get(url)
-		placetag = driver.find_element_by_class_name('_kul9p')
+		placetag = driver.find_element_by_class_name('_6y8ij') # original: _kul9p, new: _6y8ij
 		placeurl = placetag.get_attribute('href').encode('utf-8')
 		placename = placetag.get_attribute('title').encode('utf-8')
 		placename = placename.replace(',', ';')
 
-		usernametag = driver.find_element_by_class_name('_4zhc5')
+		usernametag = driver.find_element_by_class_name('_iadoq')  # original: _4zhc5, new: _iadoq
 		username = usernametag.get_attribute('title').encode('utf-8')
 		data = id_data + ',' + url + ',' + placeurl + ',' + placename + ',' +  username
 		return data
@@ -47,18 +47,19 @@ def resolveCheckin(driver, id_data, url, idThread):
 			error = driver.find_element_by_class_name('error-container')
 			return id_data + ',' + url + ',not-available,not-available,not-available'
 		except selenium.common.exceptions.NoSuchElementException:
+			# print colorama.Fore.RED + 'URL fetched but elements missing! ' + url + colorama.Fore.RESET
 			pass
 	except AttributeError:
 		print 'AttributeError Exception'
 		pass
 	except httplib.BadStatusLine, e:
-		print url, str(e), '#' + str(idThread)
+		print colorama.Fore.RED + url + ' - #' + str(idThread) + ' ' + str(e) +  colorama.Fore.RESET
 		pass
 	except urllib2.URLError, e:
-		print url, str(e), '#' + str(idThread)
-		return 1
+		print colorama.Fore.RED + url + ' - #' + str(idThread) + ' ' + str(e) +  colorama.Fore.RESET
+		return 1 # return an int to identify the need of restart driver
 	except Exception, e:
-		print 'generic exception', str(e)
+		print colorama.Fore.RED + url + ' - #' + str(idThread) + ' ' + str(e) +  colorama.Fore.RESET
 	return None
 
 def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
@@ -118,8 +119,8 @@ def saveCheckinRun(outputFilename, saveBuffer):
 			f.write(r + '\n')
 			saveBuffer.task_done()
 		except Queue.Empty:
-			print colorama.Fore.RED + colorama.BACK.WHITE, 'Save-Thread Timeout!', colorama.Fore.RED + colorama.Back.RESET
-	print colorama.Fore.BLUE + colorama.Back.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.BACK.RESET
+			print colorama.Fore.RED + colorama.Back.WHITE, 'Save-Thread Timeout!', colorama.Fore.RED + colorama.Back.RESET
+	print colorama.Fore.BLUE + colorama.Back.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.Back 	.RESET
 
 def loadDefinedPlaces(outputFilename):
 	urlsDefined = set()
@@ -135,10 +136,11 @@ def loadDefinedPlaces(outputFilename):
 
 def main():
 	printHeader()
-	urlBufferSize = 100
+	urlBufferSize = 100 # all the threads must have a ref to this buffer
 	args = sys.argv[1:]
 	if len(args) == 0:
 		print colorama.Fore.RED, 'CLI example: python InstagramPlaceCrawler.py inputfile [n_threads, ISO-Alpha 2 Country, libs/phantomjs]'
+		return
 	input_file_path = args[0]
 	try:
 		threadBufferSize = int(args[1])
