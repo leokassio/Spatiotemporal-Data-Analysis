@@ -176,6 +176,79 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 			outputfile.write(l)
 		print '#' + str(invalidSample),'Invalid Samples'
 
+def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
+									configFilename='TwitterMonitor.cfg',
+									datePattern='%Y-%m-%d %H:%M:%S'):
+	"""
+	Exports the files containing the URLs from samples locations according
+	to Instagram legacy datasets.
+	The function requires the pre-defined bounding box on
+	TwitterMonitor.cfg.
+	"""
+
+	configparser = TwitterMonitor.loadConfigParser(configFilename)
+	coords = TwitterMonitor.loadBoundBox(configparser, locationName)
+	lng0, lngn = sorted([coords[0], coords[2]])
+	lat0, latn = sorted([coords[1], coords[3]])
+	print lat0, latn, lng0, lngn
+	print colorama.Fore.CYAN, 'Exporting files with URLs from', locationName, colorama.Fore.RESET
+	for filename in inputfiles:
+		print colorama.Fore.RED, filename, colorama.Fore.RESET
+		inputfile = open(filename, 'r')
+		if '.dat' not in filename:
+			print 'Please check the extesion of input file (require .dat)'
+			exit()
+		outputfile = open(filename.replace('.dat', '-url-' + locationName.upper() + '.csv'), 'w')
+		lineBuffer = list()
+		invalidSample = 0
+		for line in tqdm(inputfile, desc='Exporting URL\'s', disable=False):
+			try:
+				# sample = eval(line.replace('\n', ''))
+				sample = line.split(', ')
+				if len(sample) != 8:
+					invalidSample += 1
+					continue
+				lng = float(sample[2])
+				lat = float(sample[3])
+				if lat >= lat0 and lat <= latn and lng >= lng0 and lng <= lngn:
+					id_data = sample[0].encode('utf-8')
+					id_user = sample[1].encode('utf-8')
+					country = 'None'
+					place_url = 'None'
+					place_name = sample[5].encode('utf-8')
+					date_local = datetime.datetime.strptime(sample[4], datePattern)
+					tweet = sample[6].encode('utf-8').split(' ')
+					url = None
+					for x in tweet[::-1]:
+						if 'https://t.co' in x:
+							url = x
+							break
+					if url == None:
+						invalidSample += 1
+						continue
+					line = id_data
+					line += ',' + id_user
+					line += ',' + country
+					line += ',' + url
+					line += ',' + place_url
+					line += ',' + place_name.replace('  ', '; ')
+					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
+					line += '\n'
+					lineBuffer.append(line)
+					if lineBuffer >= 1000:
+						for l in lineBuffer:
+							outputfile.write(l)
+						lineBuffer = list()
+			except KeyError:
+				invalidSample += 1
+				continue
+			except SyntaxError:
+				invalidSample += 1
+				continue
+		for l in tqdm(lineBuffer, desc='Saving CSV'):
+			outputfile.write(l)
+		print '#' + str(invalidSample),'Invalid Samples'
+
 if __name__ == "__main__":
 	args = sys.argv[1:]
 	f = args.pop(0)
@@ -192,5 +265,9 @@ if __name__ == "__main__":
 		locationName = args.pop(0)
 		inputfiles = args
 		exportPlaceURLByBoundBox(locationName, inputfiles)
+	elif f == 'url-bbox-legacy':
+		locationName = args.pop(0)
+		inputfiles = args
+		exportPlaceURLByBoundBoxLegacy(locationName, inputfiles)
 	else:
 		print 'look in the code to know the CLI haha :)'
