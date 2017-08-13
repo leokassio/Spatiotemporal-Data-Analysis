@@ -105,7 +105,7 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 			time.sleep(t)
 			driver = createDriver(driverPath)
 	driver.quit()
-	print colorama.Fore.RED + colorama.BACK.WHITE, 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
+	print colorama.Fore.RED + colorama.Back.WHITE, 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
 	return
 
 def saveCheckinRun(outputFilename, saveBuffer):
@@ -120,7 +120,7 @@ def saveCheckinRun(outputFilename, saveBuffer):
 			saveBuffer.task_done()
 		except Queue.Empty:
 			print colorama.Fore.RED + colorama.Back.WHITE, 'Save-Thread Timeout!', colorama.Fore.RED + colorama.Back.RESET
-	print colorama.Fore.BLUE + colorama.Back.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.Back 	.RESET
+	print colorama.Fore.BLUE + colorama.Back.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.Back.RESET
 
 def loadDefinedPlaces(outputFilename):
 	urlsDefined = set()
