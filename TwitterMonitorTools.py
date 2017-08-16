@@ -55,6 +55,8 @@ def exportPlaceURL(inputfiles):
 				place_url = sample['place_url'].encode('utf-8')
 				place_name = sample['place_name'].encode('utf-8')
 				date_local = sample['date_local']
+				lat = sample['lng']
+				lng = sample['lat']
 				line = id_data
 				line += ',' + id_user
 				line += ',' + country
@@ -62,6 +64,8 @@ def exportPlaceURL(inputfiles):
 				line += ',' + place_url
 				line += ',' + place_name.replace(',', ';')
 				line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
+				line += ',' + lat
+				line += ',' + lng
 				line += '\n'
 				lineBuffer.append(line)
 				if lineBuffer >= 100000:
@@ -98,15 +102,25 @@ def exportPlaceURLByCountry(isoCodeCountry, inputfiles):
 				country = sample['country'].upper()
 				if country != isoCodeCountry:
 					continue
-				id_data = sample['id_data']
-				id_user = sample['userid']
-				country = sample['country']
-				url = sample['urls'][-1]['expanded_url']
-				place_url = sample['place_url']
-				place_name = sample['place_name']
-				line = id_data + ',' + id_user + ',' + country
-				line += ',' + url + ',' + place_url
-				line += ',' + place_name.replace(',', ';') + '\n'
+				id_data = sample['id_data'].encode('utf-8')
+				id_user = sample['userid'].encode('utf-8')
+				country = sample['country'].encode('utf-8')
+				url = sample['urls'][-1]['expanded_url'].encode('utf-8')
+				place_url = sample['place_url'].encode('utf-8')
+				place_name = sample['place_name'].encode('utf-8')
+				date_local = sample['date_local']
+				lat = sample['lng']
+				lng = sample['lat']
+				line = id_data
+				line += ',' + id_user
+				line += ',' + country
+				line += ',' + url
+				line += ',' + place_url
+				line += ',' + place_name.replace(',', ';')
+				line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
+				line += ',' + sample['lng']
+				line += ',' + sample['lat']
+				line += '\n'
 				lineBuffer.append(line)
 				if lineBuffer >= 25000:
 					for l in lineBuffer:
@@ -153,6 +167,8 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 					place_url = sample['place_url'].encode('utf-8')
 					place_name = sample['place_name'].encode('utf-8')
 					date_local = sample['date_local']
+					lat = sample['lng']
+					lng = sample['lat']
 					line = id_data
 					line += ',' + id_user
 					line += ',' + country
@@ -160,6 +176,8 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 					line += ',' + place_url
 					line += ',' + place_name.replace(',', ';')
 					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
+					line += ',' + sample['lng']
+					line += ',' + sample['lat']
 					line += '\n'
 					lineBuffer.append(line)
 					if lineBuffer >= 1000:
@@ -233,6 +251,8 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 					line += ',' + place_url
 					line += ',' + place_name.replace('  ', '; ')
 					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
+					line += ',' + sample['lng']
+					line += ',' + sample['lat']
 					line += '\n'
 					lineBuffer.append(line)
 					if lineBuffer >= 1000:
