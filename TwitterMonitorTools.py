@@ -212,14 +212,14 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 	print colorama.Fore.CYAN, 'Exporting files with URLs from', locationName, colorama.Fore.RESET
 	for filename in inputfiles:
 		print colorama.Fore.RED, filename, colorama.Fore.RESET
-		inputfile = open(filename, 'r')
 		if '.dat' not in filename:
 			print 'Please check the extesion of input file (require .dat)'
 			exit()
+		inputfile = open(filename, 'r')
 		outputfile = open(filename.replace('.dat', '-url-' + locationName.upper() + '.csv'), 'w')
 		lineBuffer = list()
 		invalidSample = 0
-		for line in tqdm(inputfile, desc='Exporting URL\'s', disable=False):
+		for line in tqdm(inputfile, disable=False):
 			try:
 				# sample = eval(line.replace('\n', ''))
 				sample = line.split(', ')
@@ -251,8 +251,8 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 					line += ',' + place_url
 					line += ',' + place_name.replace('  ', '; ')
 					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
-					line += ',' + sample['lng']
-					line += ',' + sample['lat']
+					line += ',' + sample[3]
+					line += ',' + sample[2]
 					line += '\n'
 					lineBuffer.append(line)
 					if lineBuffer >= 1000:
@@ -268,6 +268,32 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 		for l in tqdm(lineBuffer, desc='Saving CSV'):
 			outputfile.write(l)
 		print '#' + str(invalidSample),'Invalid Samples'
+
+def mergePlaceDataset(filenameUrl, filenameResolved, outputfilename):
+	"""
+		Merges the original URL dataset with the resolved information obtained
+		with InstagramPlaceCrawler from place (name and url) and login user.
+	"""
+	unavailable = 'not-available'
+	dataResolved = dict()
+	inputfileResolved = open(filenameResolved, 'r')
+	for line in tqdm(inputfileResolved):
+		sample = line.split(',') # sample_id, instagram_url, instagram_place, name_place, user_name
+		if sample[0] != unavailable:
+			# sample[4] = sample[4].replace('\n', '')
+			dataResolved[sample[0]] = sample[2] + ',' + sample[3] + ',' + sample[4]
+
+	outputfile = open(outputfilename, 'w')
+	inputfileUrl = open(filenameUrl, 'r')
+	for line in tqdm(inputfileUrl):
+		sample = line.split(',')
+		try:
+			infoResolved = dataResolved[sample[0]]
+		except KeyError:
+			infoResolved = 'not-available,not-available,not-available'
+		data = line[:-1] + ',' + infoResolved
+		outputfile.write(data)
+
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
@@ -289,5 +315,8 @@ if __name__ == "__main__":
 		locationName = args.pop(0)
 		inputfiles = args
 		exportPlaceURLByBoundBoxLegacy(locationName, inputfiles)
+	elif f == 'merge-url':
+		furl, fresolved, fout = args
+		mergePlaceDataset(furl, fresolved, fout)
 	else:
 		print 'look in the code to know the CLI haha :)'
