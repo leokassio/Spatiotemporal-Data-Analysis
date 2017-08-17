@@ -12,6 +12,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 import time
 import Queue
+import signal
 import random
 import httplib
 import colorama
@@ -20,14 +21,14 @@ import datetime
 import urllib2
 from tqdm import tqdm
 from threading import Thread
-from selenium.webdriver import PhantomJS
+from selenium import webdriver
 
 
 def createDriver(driverPath='libs/phantomjs'):
 	try:
-		driver = PhantomJS(driverPath) # currently implemented only using phantomjs
+		driver = webdriver.PhantomJS(driverPath) # currently implemented only using phantomjs
 	except:
-		driver = PhantomJS()
+		driver = webdriver.PhantomJS()
 	return driver
 
 def resolveCheckin(driver, id_data, url, idThread):
