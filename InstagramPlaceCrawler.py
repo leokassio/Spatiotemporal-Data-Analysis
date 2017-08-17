@@ -100,10 +100,12 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 		if invalidStreak >= 100:
 			t = 60 + random.randint(1,31)
 			print colorama.Fore.RED, 'Restarting Web-Drive at #', idThread, '(' + str(t) + ')', colorama.Fore.RESET
+			driver.service.process.send_signal(signal.SIGTERM)
 			driver.quit()
 			invalidStreak = 0
 			time.sleep(t)
 			driver = createDriver(driverPath)
+	driver.service.process.send_signal(signal.SIGTERM)
 	driver.quit()
 	print colorama.Fore.RED + colorama.Back.WHITE, 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
 	return
