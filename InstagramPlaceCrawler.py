@@ -34,80 +34,73 @@ def createDriver(driverPath='libs/phantomjs'):
 def resolveCheckin(driver, id_data, url, idThread):
 	try:
 		driver.get(url)
+	except Exception, e:
+		msg = str(e)
+		if 'Connection refused' in msg:
+			t = random.randint(1,10)
+			print 'Connection Refused - sleeping ' + str(t)
+			time.sleep(t)
+		else:
+			print e
+		return 0
+	try:
+		usernametag = driver.find_element_by_class_name('_iadoq')  # original: _4zhc5, new: _iadoq
+		username = usernametag.get_attribute('title').encode('utf-8')
+	except selenium.common.exceptions.NoSuchElementException:
+		username = 'not-available'
+	except Exception, e:
+		print e
+		username = 'not-available'
+
+	try:
 		placetag = driver.find_element_by_class_name('_6y8ij') # original: _kul9p, new: _6y8ij
 		placeurl = placetag.get_attribute('href').encode('utf-8')
 		placename = placetag.get_attribute('title').encode('utf-8')
 		placename = placename.replace(',', ';')
-
-		usernametag = driver.find_element_by_class_name('_iadoq')  # original: _4zhc5, new: _iadoq
-		username = usernametag.get_attribute('title').encode('utf-8')
-		data = id_data + ',' + url + ',' + placeurl + ',' + placename + ',' +  username
-		return data
 	except selenium.common.exceptions.NoSuchElementException:
-		try:
-			error = driver.find_element_by_class_name('error-container')
-			return id_data + ',' + url + ',not-available,not-available,not-available'
-		except selenium.common.exceptions.NoSuchElementException:
-			# print colorama.Fore.RED + 'URL fetched but elements missing! ' + url + colorama.Fore.RESET
-			pass
-	except AttributeError:
-		print 'AttributeError Exception'
-		pass
-	except httplib.BadStatusLine, e:
-		print colorama.Fore.RED + url + ' - #' + str(idThread) + ' ' + str(e) +  colorama.Fore.RESET
-		pass
-	except urllib2.URLError, e:
-		print colorama.Fore.RED + url + ' - #' + str(idThread) + ' ' + str(e) +  colorama.Fore.RESET
-		return 1 # return an int to identify the need of restart driver
+		placeurl = 'not-available'
+		placename = 'not-available'
 	except Exception, e:
-		print colorama.Fore.RED + url + ' - #' + str(idThread) + ' ' + str(e) +  colorama.Fore.RESET
-	return None
+		print e
+		placeurl = 'not-available'
+		placename = 'not-available'
+	data = id_data + ',' + url + ',' + placeurl + ',' + placename + ',' +  username
+	return data
 
 def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 	driver = createDriver(driverPath)
-	emptyStreak = 0
 	invalidStreak = 0
-	invalidStreakURL = 0
 	while True:
 		try:
 			item = urlBuffer.get(timeout=60)
 		except Queue.Empty:
-			if emptyStreak < 3:
-				emptyStreak += 1
-			else:
-				print colorama.Fore.RED, 'Empty Streak Limit at #', idThread, colorama.Fore.RESET
-				break
+			print colorama.Fore.RED + 'Empty Buffer Timeout #' + str(idThread) + colorama.Fore.RESET
+			break
 		try:
 			id_data, url = item
-		except ValueError:
-			if item == 'finish':
+		except (ValueError, TypeError):
+			if item == 0:
+				urlBuffer.task_done()
+				continue
+			elif item == 'finish':
 				urlBuffer.task_done()
 				break
-		line = resolveCheckin(driver, id_data, url, idThread)
-		if type(line) == str:
-			saveBuffer.put_nowait(line)
-			invalidStreak = 0
-			invalidStreakURL = 0
-		elif line == 1:
-			invalidStreak += 1
-			invalidStreakURL += 1
-			if invalidStreakURL >= 20:
-				invalidStreak = 100
-				invalidStreakURL = 0
-		elif line == None:
-			invalidStreak += 1
+		resolved = resolveCheckin(driver, id_data, url, idThread)
+		saveBuffer.put(resolved, timeout=60)
 		urlBuffer.task_done()
 		time.sleep(random.random())
+		if resolved == 0:
+			invalidStreak += 1
 		if invalidStreak >= 100:
-			t = 60 + random.randint(1,31)
-			print colorama.Fore.RED, 'Restarting Web-Drive at #', idThread, '(' + str(t) + ')', colorama.Fore.RESET
-			driver.service.process.send_signal(signal.SIGTERM)
-			driver.quit()
 			invalidStreak = 0
+			t = 30 + random.randint(1,31)
+			print colorama.Fore.RED + 'Pausing Web-Driver at #' + str(idThread) + '(' + str(t) + ')' + colorama.Fore.RESET
 			time.sleep(t)
-			driver = createDriver(driverPath)
-	driver.service.process.send_signal(signal.SIGTERM)
-	driver.quit()
+	try: # scp wonderland.ddns.me:/media/leokassio/SANDMAN/Spatiotemporal-Data-Analysis/InstagramPlaceCrawler.py .
+		driver.service.process.send_signal(signal.SIGTERM)
+		driver.quit()
+	except Exception, e:
+		print colorama.Fore.RED + 'Error Quiting Driver!' + colorama.Fore.RESET
 	print colorama.Fore.RED + colorama.Back.WHITE, 'Finishing Crawler-Thread', idThread, colorama.Fore.RESET, colorama.Back.RESET
 	return
 
@@ -115,15 +108,17 @@ def saveCheckinRun(outputFilename, saveBuffer):
 	f = open(outputFilename, 'a', 0)
 	while True:
 		try:
-			r = saveBuffer.get(timeout=120)
-			if r == 'finish':
-				saveBuffer.task_done()
-				break
-			f.write(r + '\n')
+			resolved = saveBuffer.get(timeout=300)
+			if type(resolved) ==  str:   # str are important but int are ping
+				if resolved == 'finish':
+					saveBuffer.task_done()
+					break
+				f.write(resolved + '\n') # str contains the info required
 			saveBuffer.task_done()
 		except Queue.Empty:
-			print colorama.Fore.RED + colorama.Back.WHITE, 'Save-Thread Timeout!', colorama.Fore.RED + colorama.Back.RESET
-	print colorama.Fore.BLUE + colorama.Back.WHITE, 'Finishing Save-Thread...',  colorama.Fore.RESET + colorama.Back.RESET
+			print colorama.Fore.RED + 'Save Buffer Timeout' + colorama.Fore.RESET
+			break
+	print colorama.Fore.BLUE + colorama.Back.WHITE + 'Finishing Save-Thread' +  colorama.Fore.RESET + colorama.Back.RESET
 
 def loadDefinedPlaces(outputFilename):
 	urlsDefined = set()
@@ -139,7 +134,7 @@ def loadDefinedPlaces(outputFilename):
 
 def main():
 	printHeader()
-	urlBufferSize = 100 # all the threads must have a ref to this buffer
+	urlBufferSize = 1000 # all the threads must have a ref to this buffer
 	args = sys.argv[1:]
 	if len(args) == 0:
 		print colorama.Fore.RED, 'CLI example: python InstagramPlaceCrawler.py inputfile [n_threads, ISO-Alpha 2 Country, libs/phantomjs]'
@@ -184,6 +179,8 @@ def main():
 		try:
 			id_data = linesplited[0].encode('utf-8')
 			if id_data in urlsDefined:
+				urlBuffer.put(0) 	# keeping thread alive
+				saveBuffer.put(0) 	# keeping thread alive
 				urlsDefined.remove(id_data)
 				continue
 			url = linesplited[3].encode('utf-8')
