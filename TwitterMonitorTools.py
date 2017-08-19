@@ -141,7 +141,6 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 	to Instagram. The function requires the pre-defined bounding box on
 	TwitterMonitor.cfg.
 	"""
-
 	configparser = TwitterMonitor.loadConfigParser(configFilename)
 	coords = TwitterMonitor.loadBoundBox(configparser, locationName)
 	lng0, lngn = sorted([coords[0], coords[2]])
@@ -154,7 +153,7 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 		outputfile = open(filename.replace('.csv', '-url-' + locationName.upper() + '.csv'), 'w')
 		lineBuffer = list()
 		invalidSample = 0
-		for line in tqdm(inputfile, desc='Exporting URL\'s', disable=False):
+		for line in tqdm(inputfile, desc='Exporting URL\'s', disable=True):
 			try:
 				sample = eval(line.replace('\n', ''))
 				lng = float(sample['lat'])
@@ -172,7 +171,7 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 					line = id_data
 					line += ',' + id_user
 					line += ',' + country
-					line += ',' + url
+					line += ',' + url.replace(',', '')
 					line += ',' + place_url
 					line += ',' + place_name.replace(',', ';')
 					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
@@ -192,7 +191,7 @@ def exportPlaceURLByBoundBox(locationName, inputfiles, configFilename='TwitterMo
 				continue
 		for l in lineBuffer:
 			outputfile.write(l)
-		print '#' + str(invalidSample),'Invalid Samples'
+		print '#' + str(invalidSample) + ' invalid samples ' + filename
 
 def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 									configFilename='TwitterMonitor.cfg',
@@ -203,7 +202,6 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 	The function requires the pre-defined bounding box on
 	TwitterMonitor.cfg.
 	"""
-
 	configparser = TwitterMonitor.loadConfigParser(configFilename)
 	coords = TwitterMonitor.loadBoundBox(configparser, locationName)
 	lng0, lngn = sorted([coords[0], coords[2]])
@@ -219,7 +217,7 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 		outputfile = open(filename.replace('.dat', '-url-' + locationName.upper() + '.csv'), 'w')
 		lineBuffer = list()
 		invalidSample = 0
-		for line in tqdm(inputfile, disable=False):
+		for line in tqdm(inputfile, disable=True):
 			try:
 				# sample = eval(line.replace('\n', ''))
 				sample = line.split(', ')
@@ -247,7 +245,7 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 					line = id_data
 					line += ',' + id_user
 					line += ',' + country
-					line += ',' + url
+					line += ',' + url.replace(',', '')
 					line += ',' + place_url
 					line += ',' + place_name.replace('  ', '; ')
 					line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
@@ -267,9 +265,9 @@ def exportPlaceURLByBoundBoxLegacy(locationName, inputfiles,
 				continue
 		for l in tqdm(lineBuffer, desc='Saving CSV'):
 			outputfile.write(l)
-		print '#' + str(invalidSample),'Invalid Samples'
+		print '#' + str(invalidSample) + ' invalid samples ' + filename
 
-def mergePlaceDataset(filenameUrl, filenameResolved, outputfilename):
+def mergePlaceDataset(filenameUrl, filenameResolved, outputfilename=None):
 	"""
 		Merges the original URL dataset with the resolved information obtained
 		with InstagramPlaceCrawler from place (name and url) and login user.
@@ -277,23 +275,109 @@ def mergePlaceDataset(filenameUrl, filenameResolved, outputfilename):
 	unavailable = 'not-available'
 	dataResolved = dict()
 	inputfileResolved = open(filenameResolved, 'r')
-	for line in tqdm(inputfileResolved):
+	for line in inputfileResolved:
 		sample = line.split(',') # sample_id, instagram_url, instagram_place, name_place, user_name
-		if sample[0] != unavailable:
-			# sample[4] = sample[4].replace('\n', '')
+		if sample[4] != unavailable:
+			sample[4] = sample[4].replace('\n', '')
 			dataResolved[sample[0]] = sample[2] + ',' + sample[3] + ',' + sample[4]
 
+	if outputfilename == None:
+		outputfilename = filenameResolved.replace('resolved', 'merged')
+		if 'merged.csv' not in outputfilename:
+			print 'Error on outputfile name'
+			return
 	outputfile = open(outputfilename, 'w')
 	inputfileUrl = open(filenameUrl, 'r')
-	for line in tqdm(inputfileUrl):
+	print filenameUrl
+	for line in inputfileUrl:
 		sample = line.split(',')
 		try:
 			infoResolved = dataResolved[sample[0]]
 		except KeyError:
 			infoResolved = 'not-available,not-available,not-available'
-		data = line[:-1] + ',' + infoResolved
+		data = line[:-1] + ',' + infoResolved + '\n'
 		outputfile.write(data)
 
+def validateFiles(inputfiles):
+	for filename in inputfiles:
+		inputfile = open(filename, 'r')
+		corruptLines = 0
+		dateFormat = '%y-%m-%d %H:%M:%S'
+		if '-resolved.csv' in filename:
+			print colorama.Fore.BLUE + filename + colorama.Fore.RESET
+			for line in inputfile:
+				fields = line.split(',')
+				if len(fields) != 5:
+					# print 'Corrupt line'
+					# print line
+					# exit()
+					corruptLines += 1
+				int(fields[0])
+				if 'http' not in fields[1]:
+					raise Exception('Invalid photo URL: ' + line)
+				elif 'http' not in fields[2] and fields[2] != 'not-available':
+					raise Exception('Invalid place URL: ' + line)
+		elif '-merged.csv' in filename:
+			print colorama.Fore.RED + filename + colorama.Fore.RESET
+			for line in inputfile:
+				fields = line.split(',')
+				if len(fields) != 12:
+					# print 'Corrupt line'
+					# print line
+					# exit()
+					corruptLines += 1
+				try:
+					int(fields[0])
+					int(fields[1])
+				except ValueError:
+					# print 'Invalid ids:', line
+					continue
+				try:
+					float(fields[7])
+					float(fields[8])
+				except ValueError:
+					print 'Invalids coords:', line
+					continue
+				try:
+					datetime.datetime.strptime(fields[6], dateFormat)
+				except ValueError:
+					print 'Invalid datetime:', line
+					continue
+
+				if 'http' not in fields[3]:
+					raise Exception('Invalid photo URL: ' + line)
+				elif 'http' not in fields[9] and fields[9] != 'not-available':
+					raise Exception('Invalid place URL: ' + line)
+		else:
+			print colorama.Fore.YELLOW + filename + colorama.Fore.RESET
+			for line in inputfile:
+				fields = line.split(',')
+				if len(fields) != 9:
+					corruptLines += 1
+				try:
+					int(fields[0])
+					int(fields[1])
+				except ValueError:
+					print 'Invalid ids:', line
+					continue
+				try:
+					float(fields[7])
+					float(fields[8])
+				except ValueError:
+					print 'Invalids coords:', line
+					continue
+				try:
+					datetime.datetime.strptime(fields[6], dateFormat)
+				except ValueError:
+					print 'Invalid datetime:', line
+					continue
+				if 'http' not in fields[3]:
+					raise Exception('Invalid photo URL: ' + line)
+		if corruptLines > 0:
+			print '#' + str(corruptLines) + ' corrupted lines ' + filename
+
+
+	return None
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
@@ -316,7 +400,21 @@ if __name__ == "__main__":
 		inputfiles = args
 		exportPlaceURLByBoundBoxLegacy(locationName, inputfiles)
 	elif f == 'merge-url':
-		furl, fresolved, fout = args
-		mergePlaceDataset(furl, fresolved, fout)
+		if len(args) == 3:
+			furl, fresolved, fout = args
+			mergePlaceDataset(furl, fresolved, fout)
+		else:
+			furl, fresolved = args
+			mergePlaceDataset(furl, fresolved)
+	elif f == 'validate-url-files':
+		inputfiles = args
+		validateFiles(inputfiles)
 	else:
 		print 'look in the code to know the CLI haha :)'
+
+
+
+
+
+
+#
