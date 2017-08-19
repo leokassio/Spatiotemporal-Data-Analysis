@@ -60,7 +60,7 @@ def exportPlaceURL(inputfiles):
 				line = id_data
 				line += ',' + id_user
 				line += ',' + country
-				line += ',' + url
+				line += ',' + url.replace(',', '')
 				line += ',' + place_url
 				line += ',' + place_name.replace(',', ';')
 				line += ',' + date_local.strftime('%y-%m-%d %H:%M:%S')
@@ -299,6 +299,10 @@ def mergePlaceDataset(filenameUrl, filenameResolved, outputfilename=None):
 		outputfile.write(data)
 
 def validateFiles(inputfiles):
+	'''
+		Validates the files exported from export methods (original files with urls),
+		the resolved url files and the merged files.
+	'''
 	for filename in inputfiles:
 		inputfile = open(filename, 'r')
 		corruptLines = 0
