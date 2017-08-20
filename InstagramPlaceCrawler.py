@@ -86,7 +86,11 @@ def resolveCheckinRun(urlBuffer, saveBuffer, idThread, driverPath):
 				urlBuffer.task_done()
 				break
 		resolved = resolveCheckin(driver, id_data, url, idThread)
-		saveBuffer.put(resolved, timeout=60)
+		try:
+			saveBuffer.put(resolved, timeout=60)
+		except Queue.Full:
+			print 'Save Thread is dead bro'
+			exit()
 		urlBuffer.task_done()
 		time.sleep(random.random())
 		if resolved == 0:
@@ -179,8 +183,12 @@ def main():
 		try:
 			id_data = linesplited[0].encode('utf-8')
 			if id_data in urlsDefined:
-				urlBuffer.put(0) 	# keeping thread alive
-				saveBuffer.put(0) 	# keeping thread alive
+				try:
+					urlBuffer.put(0, timeout=60) 	# keeping thread alive
+					saveBuffer.put(0, timeout=60) 	# keeping thread alive
+				except Queue.Full:
+					print 'Threads are dead bro :('
+					exit()
 				urlsDefined.remove(id_data)
 				continue
 			url = linesplited[3].encode('utf-8')
