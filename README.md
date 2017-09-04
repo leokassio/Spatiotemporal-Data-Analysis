@@ -15,18 +15,24 @@ Set of tools for exploratory data analysis using Twitter, Instagram and Foursqua
 * TwitterMonitorHashtagsNoCoords: crawler to collect samples with some geolocation defined (do not require precise GPS coords), but the samples match the set of hastags defined as parameter.
 
 ### Place Crawlers
-* FoursquarePlaceCrawler
-* InstagramPlaceCrawler
+The place crawlers add contextual data for check-ins and geotagged photos. They obtain the place indicated by user and help to group the raw GPS coords.
+* FoursquarePlaceCrawler: crawler to visit the check-in page and obtain the name and short url of place indicated by user.
+* InstagramPlaceCrawler: crawler to visit the instagram photo URL and collect the users login, place name and URL.
 
 ### Foursquare Place Classifier
+TBA
 * FoursquareCategories.json
 * FoursquareCategories.py
 
-### Spatiotemporal
-* SpatiotemporalSimulator: simulator to estimate the encounter among users
+### Spatiotemporal Simulation
+The Spatiotemporal Suite is a set of tools to prepare the data from TwitterMonitor for simulation of encounters among users.
+The suite provides a trace exporter, a simulator and visualization tool.
 * SpatiotemporalTraceExporter: exports the traces used in the SpatiotemporalSimulator.
+* SpatiotemporalSimulator: simulator to estimate the encounter among users
+* SpatiotemporalViz: tool for data visualization of results
 
 ### xargs Folder
+Utility folder where the files complement the commands to use with xargs.
 * merge-traces.txt: list of files corresponding to the url datasets (original and resolved)
 * app-data.txt: list of files used in the plotly dashboard application
 
@@ -48,4 +54,19 @@ cat ../xargs/app-data.txt | xargs -n 3 -P 4 python tools.py
 Validate URL datasets (original, resolved and merged):
 ```
 python TwitterMonitorTools.py validate-url-files data/instagram-url/london/*
+```
+
+SpatiotemporalTraceExporter works two stages: save and sort
+```
+# require the inputfiles defined in InputData.json
+python SpatiotemporalTraceExporter.py save sao_paulo
+
+# merge the temporary files resulted of 1st step
+python SpatiotemporalTraceExporter.py sort sao_paulo*
+```
+
+SpatiotemporalSimulator
+```
+# require the inputfiles defined in SpatiotemporalSimulator.json
+python SpatiotemporalSimulator.py sao_paulo
 ```
