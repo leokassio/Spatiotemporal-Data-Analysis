@@ -82,6 +82,8 @@ def exportPlaceURL(inputfiles):
 			outputfile.write(l)
 		print '#' + str(invalidSample),'Invalid Samples'
 
+# TODO: implement exportPlaceURLLegacy(inputfiles)
+
 def exportPlaceURLByCountry(isoCodeCountry, inputfiles):
 	"""
 	Filters the fields and exports in CSV files the information related to the
@@ -312,9 +314,6 @@ def validateFiles(inputfiles):
 			for line in inputfile:
 				fields = line.split(',')
 				if len(fields) != 5:
-					# print 'Corrupt line'
-					# print line
-					# exit()
 					corruptLines += 1
 				int(fields[0])
 				if 'http' not in fields[1]:
@@ -326,9 +325,6 @@ def validateFiles(inputfiles):
 			for line in inputfile:
 				fields = line.split(',')
 				if len(fields) != 12:
-					# print 'Corrupt line'
-					# print line
-					# exit()
 					corruptLines += 1
 				try:
 					int(fields[0])
