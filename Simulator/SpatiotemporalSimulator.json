@@ -4,20 +4,19 @@
     "description": "Scenario for development and tests - data from Twitter in NYC",
     "max_distance": 150,
     "max_interval": 3600,
-    "page_size": 50000,
-    "inputfiles": [
+    "outputfile": "data/dev-edges.json",
+    "traces": [
       "data/dev-1-twitter.json",
       "data/dev-2-twitter.json"
-    ],
-    "outputfile": "data/dev-edges.json"
+    ]
   },
   "new_york": {
     "name": "New York",
     "description": "Data samples collected from Twitter.",
     "max_distance": 150,
     "max_interval": 3600,
-    "page_size": 50000,
-    "inputfiles": [
+    "outputfile":"data/new_york-edges.json",
+    "traces": [
       "data/new_york-2016-17-twitter.json",
       "data/new_york-2016-18-twitter.json",
       "data/new_york-2016-19-twitter.json",
@@ -76,16 +75,15 @@
       "data/new_york-2017-27-twitter.json",
       "data/new_york-2017-28-twitter.json",
       "data/new_york-2017-29-twitter.json"
-    ],
-    "outputfile": "data/new_york-edges.json"
+    ]
   },
   "paris": {
     "name": "Paris",
     "description": "Data samples collected from Twitter.",
     "max_distance": 150,
     "max_interval": 3600,
-    "page_size": 50000,
-    "inputfiles": [
+    "outputfile":"data/paris-edges.json",
+    "traces": [
       "data/paris-2016-17-twitter.json",
       "data/paris-2016-18-twitter.json",
       "data/paris-2016-19-twitter.json",
@@ -142,16 +140,15 @@
       "data/paris-2017-27-twitter.json",
       "data/paris-2017-28-twitter.json",
       "data/paris-2017-29-twitter.json"
-    ],
-    "outputfile": "data/paris-edges.json"
+    ]
   },
   "london": {
     "name": "London",
     "description": "Data samples collected from Twitter.",
     "max_distance": 150,
     "max_interval": 3600,
-    "page_size": 50000,
-    "inputfiles": [
+    "outputfile":"data/london-edges.json",
+    "traces": [
       "data/london-2016-17-twitter.json",
       "data/london-2016-18-twitter.json",
       "data/london-2016-19-twitter.json",
@@ -210,16 +207,15 @@
       "data/london-2017-27-twitter.json",
       "data/london-2017-28-twitter.json",
       "data/london-2017-29-twitter.json"
-    ],
-    "outputfile": "data/london-edges.json"
+    ]
   },
   "los_angeles": {
     "name": "Los Angeles",
     "description": "Data samples collected from Twitter.",
     "max_distance": 150,
     "max_interval": 3600,
-    "page_size": 50000,
-    "inputfiles": [
+    "outputfile":"data/los_angeles-edges.json",
+    "traces": [
       "data/los_angeles-2016-17-twitter.json",
       "data/los_angeles-2016-18-twitter.json",
       "data/los_angeles-2016-19-twitter.json",
@@ -278,7 +274,6 @@
       "data/los_angeles-2017-27-twitter.json",
       "data/los_angeles-2017-28-twitter.json",
       "data/los_angeles-2017-29-twitter.json"
-    ],
-    "outputfile": "data/los_angeles-edges.json"
+    ]
   }
 }

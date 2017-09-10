@@ -6,7 +6,7 @@
     -1.5501914,
     -48.2968469,
     -1.047698
-   ]
+  ]
   },
   "belo_horizonte": {
    "bbox": [
@@ -38,7 +38,13 @@
     40.811404,
     29.4288049,
     41.199239
-   ]
+   ],
+   "coords":[
+     41.015137,
+     28.979530
+   ],
+   "neighbourhoods_file":"../data/shapefiles/istanbul-neighbourhoods.geojson",
+   "edges_file":["data/istanbul-edges.json"]
   },
   "jakarta": {
    "bbox": [
@@ -54,7 +60,13 @@
     51.3849401,
     0.148271,
     51.6723432
-   ]
+   ],
+   "coords":[
+     51.501476,
+     -0.140634
+   ],
+   "neighbourhoods_file":"../data/shapefiles/london-neighbourhoods.geojson",
+   "edges_file":["data/london-edges.json"]
   },
   "los_angeles": {
    "bbox": [
@@ -62,7 +74,13 @@
     33.7036519,
     -118.1552891,
     34.3373061
-   ]
+  ],
+  "coords":[
+    -118.243683,
+    34.052235
+  ],
+  "neighbourhoods_file":"../data/shapefiles/los_angeles-neighbourhoods.geojson",
+  "edges_file":["data/los_angeles-edges.json"]
   },
   "madrid": {
    "bbox": [
@@ -70,7 +88,13 @@
     40.3120639,
     -3.5249115,
     40.5638447
-   ]
+   ],
+   "coords":[
+     40.415363,
+     -3.707398
+   ],
+   "neighbourhoods_file":"../data/shapefiles/madrid-neighbourhoods.geojson",
+   "edges_file":["data/madrid-edges.json"]
   },
   "new_york": {
    "bbox": [
@@ -78,7 +102,13 @@
     40.4773991,
     -73.7002721,
     40.9175771
-   ]
+   ],
+   "coords":[
+     40.730610,
+     -73.935242
+   ],
+   "neighbourhoods_file":"../data/shapefiles/new_york-neighbourhoods.geojson",
+   "edges_file":["data/new_york-edges.json"]
   },
   "osaka": {
    "bbox": [
@@ -86,7 +116,13 @@
     34.5861474,
     135.5991712,
     34.7687543
-   ]
+   ],
+   "coords":[
+     34.502220,
+     135.585876
+   ],
+   "neighbourhoods_file":"../data/shapefiles/osaka-neighbourhoods.geojson",
+   "edges_file":["data/osaka-edges.json"]
   },
   "paris": {
    "bbox": [
@@ -94,7 +130,13 @@
     48.815573,
     2.4699208,
     48.9021449
-   ]
+   ],
+   "coords":[
+     48.858093,
+     2.294694
+   ],
+   "neighbourhoods_file":"../data/shapefiles/paris-neighbourhoods.geojson",
+   "edges_file":["data/paris-edges.json"]
   },
   "rio_de_janeiro": {
    "bbox": [
@@ -102,7 +144,13 @@
     -23.0822288,
     -43.0969042,
     -22.7460327
-   ]
+   ],
+   "coords":[
+     -22.970722,
+     -43.182365
+   ],
+   "neighbourhoods_file":"../data/shapefiles/rio-neighbourhoods.geojson",
+   "edges_file":["data/rio-edges.json"]
   },
   "sao_paulo": {
    "bbox": [
@@ -110,7 +158,13 @@
     -24.0082209,
     -46.3650844,
     -23.3566039
-   ]
+   ],
+   "coords":[
+     -23.533773,
+     -46.625290
+   ],
+   "neighbourhoods_file":"../data/shapefiles/sao_paulo-neighbourhoods.geojson",
+   "edges_file":["data/sao_paulo-edges.json"]
   },
   "sydney": {
    "bbox": [
@@ -142,7 +196,13 @@
     44.962733,
     -75.246598,
     45.53758
-   ]
+   ],
+   "coords":[
+     45.420315,
+     -75.695419
+   ],
+   "neighbourhoods_file":"../data/shapefiles/ottawa-neighbourhoods.geojson",
+   "edges_file":["data/ottawa-edges.json"]
   },
   "yokohama": {
    "bbox": [
@@ -157,6 +217,11 @@
   "contact": "kassio.comp@gmail.com",
   "curator": "Kassio Machado",
   "description": "JSON objects of general information of cities studied.",
-  "data":{"bbox":"source: http://boundingbox.klokantech.com - corners left, botton, right, top (long, lat, long, lat)"}
+  "data":{
+    "bbox":"Source: http://boundingbox.klokantech.com - corners left, botton, right, top (long, lat, long, lat)",
+    "coords":"GPS coords center of the city",
+    "neighbourhoods_file":"File with coords of city neighbourhoods, usually a GeoJSON.",
+    "edges_file":"File with encounters resulted from simulator"
+  }
  }
 }

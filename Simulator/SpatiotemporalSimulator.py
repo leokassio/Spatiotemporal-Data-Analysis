@@ -55,19 +55,47 @@ def loadTotalRows(inputfilename):
 	inputfile.close()
 	return nrows
 
-def runSimulation(inputfilenames, outputfilename, maxInterval=900,
-					maxDistance=150, name=None, desc=None):
-	"""
-		Computes the encounters and save it in
-	"""
-	outputfile = open(outputfilename, 'w')
-	data = {'date_utc':'UTC Date and Time @Twitter', 'userid1':'ID user (int) @Twitter',
-			'userid2':'ID user (int) @Twitter', 'interval':'Interval among samples',
-			'distance':'Distance among GPS coords', 'lat':'GPS latitude', 'lng':'GPS longitude',
+def createOutputfile(outputfilename):
+	'''
+		Preparation of outputfile
+	'''
+	fileHeader = {'date_utc':'UTC Date and Time @Twitter',
+			'userid1':'ID user (int) @Twitter',
+			'userid2':'ID user (int) @Twitter',
+			'interval':'Interval among samples',
+			'distance':'Distance among GPS coords',
+			'lat':'GPS latitude', 'lng':'GPS longitude',
 			'id_data1':'ID of tweet', 'id_data2':'ID of tweet',
-			'country':'Country @Twitter', 'content':'Intersection of meta on tweet (URL and hashtags)'}
-	json.dump(data, outputfile)
+			'country':'Country @Twitter',
+			'content':'Intersection of meta on tweet (URL and hashtags)'}
+	outputfile = open(outputfilename, 'w')
+	json.dump(fileHeader, outputfile)
 	outputfile.write('\n')
+	return outputfile
+
+def saveEdges(edges, currentOut, outputfile=None):
+	for data in edges:
+		out = data.pop('out')
+		if out != currentOut or outputfile == None:
+			currentOut = out
+			tempname = outputfilename.replace('.json', '-' + out + '.json')
+			print WARNING +  'Saving file ' + tempname + RESET
+			if outputfile:
+				outputfile.close()
+			outputfile = createOutputfile(tempname)
+		json.dump(data, outputfile)
+		outputfile.write('\n')
+	outputfile.flush()
+	return currentOut, outputfile
+
+def runSimulation(inputfilenames, outputfilename, maxInterval=900,
+					maxDistance=150, name=None, desc=None, bufferOutSize=10000):
+	"""
+		Computes the encounters among samples according to thethresholds of
+		distance  and interval
+	"""
+	currentOut = '' # keep the last week saved
+	outputfile = None
 	dateFormat = '%Y-%m-%d %H:%M:%S'
 	bufferOut = list()
 	nfiles = len(inputfilenames)
@@ -75,7 +103,7 @@ def runSimulation(inputfilenames, outputfilename, maxInterval=900,
 	for inputfileindex, inputfilename in enumerate(inputfilenames):
 		inputfileindex += 1
 		filesCounter = '(' + str(inputfileindex) + '/' + str(nfiles) + ')'
-		print INFO + 'Loading file ' + inputfilename + filesCounter  + RESET
+		print INFO + 'Loading file ' + inputfilename + ' ' + filesCounter  + RESET
 		lastFile = False if inputfileindex != nfiles else True
 		nrows = loadTotalRows(inputfilename)
 		try:
@@ -94,11 +122,14 @@ def runSimulation(inputfilenames, outputfilename, maxInterval=900,
 			except IndexError:
 				pass
 			trace.append(sample)
-		for i, s1 in tqdm(enumerate(trace), total=len(trace), desc='Simulating', leave=False):
+		pbar = tqdm(desc='Simulating', leave=True, total=len(trace), dynamic_ncols=True)
+		for i, s1 in enumerate(trace): # tqdm(enumerate(trace), total=len(trace), desc='Simulating', leave=False, disable=True):
 			# Preparing the data from current sample
+			pbar.update(1)
 			uid = s1['userid']
 			datejson = s1['date_utc']
 			date_utc = s1['datetime']
+			out = date_utc.strftime('%Y-%U')
 			lat = s1['lat']
 			lng = s1['lng']
 			country = s1['country']
@@ -108,7 +139,8 @@ def runSimulation(inputfilenames, outputfilename, maxInterval=900,
 			# Testing if the last sample of page comparable to 1st sample
 			interval = (s2['datetime'] - date_utc).total_seconds()
 			if interval <= maxInterval and not lastFile:
-				print WARNING + 'Fetching data in the next file' + RESET
+				pbar.close()
+				# print WARNING + 'Fetching data in the next file' + RESET
 				sliceTrace = i
 				break
 			sliceTrace = i + 1
@@ -124,19 +156,18 @@ def runSimulation(inputfilenames, outputfilename, maxInterval=900,
 									'userid2':s2['userid'], 'interval':int(interval),
 									'distance':int(dist), 'lat':lat, 'lng':lng,
 									'id_data1':id_data, 'id_data2':s2['id_data'],
-									'country':country, 'content':intersec}
+									'country':country, 'content':intersec,
+									'out':out}
 							bufferOut.append(edge)
 					else:
 						break
 				else:
 					continue
-			if len(bufferOut) >= 10000:
-				desc = 'Saving file ' + outputfilename
-				for data in tqdm(bufferOut, desc=desc, leave=False, disable=True):
-					json.dump(data, outputfile)
-					outputfile.write('\n')
-				bufferOut = list()
+			if len(bufferOut) >= bufferOutSize:
+				currentOut, outputfile = saveEdges(bufferOut, currentOut, outputfile)
+				bufferOut = list() # restart buffer
 		trace = trace[sliceTrace:]
+	saveEdges(bufferOut, currentOut, outputfile) # flush of buffer
 
 def logo():
 	color = colorama.Fore.RED
@@ -162,7 +193,7 @@ if __name__ == "__main__":
 		desc = scenarioConfig['description']
 		maxInterval = scenarioConfig['max_interval']
 		maxDistance = scenarioConfig['max_distance']
-		inputfilenames = scenarioConfig['inputfiles']
+		inputfilenames = scenarioConfig['traces']
 		outputfilename = scenarioConfig['outputfile']
 	except IndexError:
 		print ERROR + 'Please provide a valid cmd line' + RESET

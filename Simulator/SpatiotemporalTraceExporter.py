@@ -12,7 +12,7 @@ WARNING = colorama.Fore.BLACK + colorama.Back.YELLOW + '[WRNG] '
 ERROR = colorama.Fore.BLACK + colorama.Back.RED + '[ERROR] '
 RESET = colorama.Fore.RESET + colorama.Back.RESET
 
-def loadInputfiles(filename='InputData.json'):
+def loadJSON(filename='SpatiotemporalTraceExporter.json'):
 	inputfile = open(filename, 'r')
 	data = json.load(inputfile)
 	return data
@@ -46,13 +46,13 @@ def saveWeeklyFiles(inputfilenames, bbox):
 	outputfilePattern = city + '-%Y-%U-%B.json'
 	datePattern = '%Y-%m-%d %H:%M:%S'
 	deleteKeys = ['lang', 'date_original', 'app', 'place_name', 'date_local']
-	deleteKeys += ['app_url', 'screen_name', 'place_url', 'dataset_curator']
+	deleteKeys += ['app_url', 'place_url', 'dataset_curator']
 	deleteKeys += ['place_type', 'weekday', 'passive_collect']
 
 	lng0, lngn = sorted([bbox[0], bbox[2]])
 	lat0, latn = sorted([bbox[1], bbox[3]])
 	for inputfilename in inputfilenames:
-		print WARNING + 'Loading file: ' + inputfilename + RESET
+		print WARNING + 'Save Weeks: ' + inputfilename + RESET
 		# fixing the problem of latitude and longitude inverted
 		latKey = 'lat'
 		lngKey = 'lng'
@@ -113,7 +113,7 @@ def sortWeeklyFiles(inputfilenames):
 		Sort the samples stored in the files and exported from saveWeeklyFiles.
 	"""
 	for inputfilename in inputfilenames:
-		print INFO + 'Loading file: ' + inputfilename + RESET
+		print INFO + 'Sort Samples: ' + inputfilename + RESET
 		invalidSample = 0
 		dataset = list()
 		nrows = loadTotalLines(inputfilename)
@@ -146,26 +146,73 @@ def sortWeeklyFiles(inputfilenames):
 		outputfile.close()
 	return
 
+def saveUserCoords(inputfilenames, city):
+	'''
+		Saves external files couting the coords visitiedfor each user.
+		The files corresponds to JSON objects (each line) with userid and
+		a dict of coords and its occurrences.
+	'''
+	dictUsers = dict()
+	for inputfilename in inputfilenames:
+		print INFO + 'Users Coords: ' + inputfilename + RESET
+		inputfilename = 'data/' + inputfilename
+		nrows = loadTotalLines(inputfilename)
+		inputfile = open(inputfilename, 'r')
+		for line in tqdm(inputfile, desc='Loading', total=nrows, leave=False):
+			try:
+				sample = json.loads(line)
+			except Exception:
+				invalidSample += 1
+			userid = sample['userid']
+			coords = str((sample['lat'], sample['lng']))
+			try:
+				dictUsers[userid][coords] += 1
+			except KeyError:
+				if userid not in dictUsers:
+					dictUsers[userid] = {coords:1}
+					continue
+				dictUsers[userid][coords] = 1
+	outputfilename = 'data/' + city + '-user-coords.json'
+	outputfile = open(outputfilename, 'w')
+	for u in tqdm(dictUsers, desc='Saving'):
+		data = dictUsers[u]
+		data = {'userid':u, 'coords':data}
+		json.dump(data, outputfile)
+		outputfile.write('\n')
+	return
+
 if __name__ == "__main__":
+	# TODO add argparser
+	# func is mandatory
+	# city is mandatory when func = save
+	# inputfiles are mandatory when func = sort
+
+	configFilename = 'SpatiotemporalTraceExporter.json'
 	try:
 		args = sys.argv[1:]
 		func = args.pop(0)
 	except Exception:
 		print ERROR + 'Please provide a valid cmd line: python SpatiotemporalTraceExporter.py func args' + RESET
 		exit()
-	if func == 'sort':
-		inputfiles = args
-		sortWeeklyFiles(inputfiles)
-	elif func == 'save':
+
+	if func == 'save':
 		city = args.pop(0)
-		inputfiles = loadInputfiles(filename='InputData.json')
-		inputfilenames = inputfiles['instagram'] + inputfiles['foursquare']
+		config = loadJSON(filename=configFilename)
+		inputfilenames = config['raw']['instagram'] + inputfiles['raw']['foursquare']
 		try:
-			inputfilenames = inputfiles[city] + inputfilenames
+			inputfilenames = config['raw'][city] + inputfilenames
 		except KeyError:
 			print WARNING + city + ' has no specific inputfiles!' + RESET
 		cityInfo = loadCityInfo(city, filename='CityInfo.json')
 		saveWeeklyFiles(inputfilenames, cityInfo['bbox'])
+	elif func == 'sort':
+		inputfiles = args
+		sortWeeklyFiles(inputfiles)
+	elif func == 'coords':
+		city = args.pop(0)
+		config = loadJSON(filename=configFilename)
+		inputfilenames = config['traces'][city]
+		saveUserCoords(inputfilenames, city)
 	else:
 		print ERROR + 'No function to execute!' + RESET
 
