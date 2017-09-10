@@ -12,18 +12,20 @@
 # ============================================================================================
 # git commands
 # ============================================================================================
-git add filename 					-> add file to commit
-git commit -m "commit text"			-> make a commit
-git status							-> show status of files available to commit
-git log 							->
-git reflog 							-> indexes of commits (allows to you to revert to a specific commit)
-git reset --hard hash-commit		-> reset to specific
-git checkout -b brachname			-> create a new branch
+git log 											-> show git log
+git status										-> show status of files available to commit
+git add -u 										-> add all files modified and tracked to the current commit
+git add filename 							-> add file to commit
+git commit -m "commit text"		-> make a commit
 git push origin master				-> publish the commits commit on master brach
-git remote add origin link			-> add remote repository
-git clone link						-> clone remote repository
-git remote -v 						-> show remote repositories connected
-git pull							-> update your local repository to the newest commit
+git pull											-> update your local repository to the newest commit
+git rebase -i
+git reflog 										-> indexes of commits (allows to you to revert to a specific commit)
+git reset --hard hash-commit	-> reset to specific
+git checkout -b brachname			-> create a new branch
+git remote add origin link		-> add remote repository
+git clone link								-> clone remote repository
+git remote -v 								-> show remote repositories connected
 git diff branch1 branch2			-> preview the differences
 
 # ============================================================================================
