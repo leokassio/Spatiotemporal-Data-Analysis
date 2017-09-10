@@ -1,4 +1,4 @@
-# ### Data Acquisition/Collection
+# Data Acquisition/Collection
 Set of tools for data collection from Twitter, Foursquare and Instagram.
 
 * TwitterMonitor.py: module to define the basic functions used by TwitterMonitor crawlers. Actually, it includes banner and configuration loaders.

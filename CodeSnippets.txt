@@ -19,7 +19,7 @@ git add filename 							-> add file to commit
 git commit -m "commit text"		-> make a commit
 git push origin master				-> publish the commits commit on master brach
 git pull											-> update your local repository to the newest commit
-git rebase -i
+git rebase -i									-> used to merge multiples commits
 git reflog 										-> indexes of commits (allows to you to revert to a specific commit)
 git reset --hard hash-commit	-> reset to specific
 git checkout -b brachname			-> create a new branch
