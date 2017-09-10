@@ -73,12 +73,12 @@ def createOutputfile(outputfilename):
 	outputfile.write('\n')
 	return outputfile
 
-def saveEdges(edges, currentOut, outputfile=None):
+def saveEdges(edges, currentOut, sufixFilename, outputfile=None):
 	for data in edges:
 		out = data.pop('out')
 		if out != currentOut or outputfile == None:
 			currentOut = out
-			tempname = outputfilename.replace('.json', '-' + out + '.json')
+			tempname = sufixFilename + '-edges-' + currentOut + '.json'
 			print WARNING +  'Saving file ' + tempname + RESET
 			if outputfile:
 				outputfile.close()
@@ -88,7 +88,7 @@ def saveEdges(edges, currentOut, outputfile=None):
 	outputfile.flush()
 	return currentOut, outputfile
 
-def runSimulation(inputfilenames, outputfilename, maxInterval=900,
+def runSimulation(inputfilenames, config, outputdir, maxInterval=900,
 					maxDistance=150, name=None, desc=None, bufferOutSize=10000):
 	"""
 		Computes the encounters among samples according to thethresholds of
@@ -96,6 +96,7 @@ def runSimulation(inputfilenames, outputfilename, maxInterval=900,
 	"""
 	currentOut = '' # keep the last week saved
 	outputfile = None
+	sufixFilename = outputdir + config
 	dateFormat = '%Y-%m-%d %H:%M:%S'
 	bufferOut = list()
 	nfiles = len(inputfilenames)
@@ -164,10 +165,10 @@ def runSimulation(inputfilenames, outputfilename, maxInterval=900,
 				else:
 					continue
 			if len(bufferOut) >= bufferOutSize:
-				currentOut, outputfile = saveEdges(bufferOut, currentOut, outputfile)
+				currentOut, outputfile = saveEdges(bufferOut, currentOut, sufixFilename, outputfile)
 				bufferOut = list() # restart buffer
 		trace = trace[sliceTrace:]
-	saveEdges(bufferOut, currentOut, outputfile) # flush of buffer
+	saveEdges(bufferOut, currentOut, sufixFilename, outputfile) # flush of buffer
 
 def logo():
 	color = colorama.Fore.RED
@@ -194,7 +195,7 @@ if __name__ == "__main__":
 		maxInterval = scenarioConfig['max_interval']
 		maxDistance = scenarioConfig['max_distance']
 		inputfilenames = scenarioConfig['traces']
-		outputfilename = scenarioConfig['outputfile']
+		outputdir = scenarioConfig['output_dir']
 	except IndexError:
 		print ERROR + 'Please provide a valid cmd line' + RESET
 		print ERROR + 'ex: python EncounterSimulatorTwitter.py scenario-name' + RESET
@@ -203,7 +204,7 @@ if __name__ == "__main__":
 		print e
 		print ERROR + 'Invalid scenario, please check SpatiotemporalSimulator.json' + RESET
 		exit()
-	runSimulation(inputfilenames, outputfilename, maxInterval, maxDistance, name, desc)
+	runSimulation(inputfilenames, config, outputdir, maxInterval, maxDistance, name, desc)
 
 
 
