@@ -16,4 +16,5 @@ The place crawlers add contextual data for check-ins and geotagged photos. They 
 ### Foursquare Place Classifier
 TBA
 * FoursquareCategories.json
+* FoursquareCategories.py: crawler to relate the Instagram places to Foursquare places. The main goal is capture the informations of places's categories.
 * FoursquareCategories.py
