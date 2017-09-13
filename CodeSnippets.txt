@@ -45,6 +45,25 @@ date 					# simple current datetime os system
 # Python Code Snippets
 # ============================================================================================
 
+import sys
+import argparse
+parser = argparse.ArgumentParser(description=' brief desc. of what the program does and how it works.',
+                                epilog='Additional info after show the args.')
+parser.add_argument('arg1',
+                    help='Mandatory arg - The program execution depends of it.')
+parser.add_argument('arg2', choices=['a', 'b', 'c'],
+                    help='Mandatory arg with predefined options')
+parser.add_argument('-o', '--optdefault', metavar='value', default=1,
+                    help='Optional arg with default value')
+parser.add_argument('-i', '--optchoice', metavar='value', default='b',
+                    choices=['a', 'b', 'c'],
+                    help='Optional arg with default value')
+if len(sys.argv) == 1: # if no arguments, then present the help
+    parser.print_help()
+    exit()
+else:
+    args = parser.parse_args()
+
 # Funny error messages
 print '¯\_(ツ)_/¯ sometines Exceptions happen bro'
 print '(⊙_☉) A wild EXCEPTION appears'
@@ -300,8 +319,12 @@ except Exception as e:
 print doc
 
 # ============================================================================================
-# Mongodb Shell Code Snippets
+# Mongodb Code Snippets
 # ============================================================================================
+
+# start mongo
+ mongod --config /usr/local/etc/mongod.conf
+
 # add user on admin database and private
 # OBS: config file on /etc/mongod.conf should be configured according to bind-address, port and authenticated mode
 db.createUser({user:'adm_leokassio', pwd:'xxx', roles:[{role:'userAdminAnyDatabase', db:'admin'}]})
