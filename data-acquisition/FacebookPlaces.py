@@ -23,10 +23,26 @@ ERROR = colorama.Fore.BLACK + colorama.Back.RED + '[ERROR] '
 RESET = colorama.Fore.RESET + colorama.Back.RESET
 
 if __name__ == "__main__":
+    desc = 'Facebook Place Crawler - Explores the Facebook Places API.\
+    It requires input files formated as JSON with name to query and GPS Coords.'
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('app_index', default=0,
+                        help='Index of app credentials on FacebookPlaces.json')
+    parser.add_argument('inputfilename',
+                        help='lines formated in JSON. Must provide place name \
+                        to query and GPS coords')
+    parser.add_argument('-i', '--interval', metavar='value',default=1,
+                        help='Interval among requests (in seconds).')
+    if len(sys.argv) == 1:
+        parser.print_help()
+        exit()
+    else:
+        args = parser.parse_args()
+    print args
 
-    appIndex, inputfilename, interval = sys.argv[1:]
-    appIndex = int(appIndex)
-    interval = float(interval)
+    inputfilename = args.inputfilename
+    appIndex = int(args.app_index)
+    interval = float(args.interval)
 
     filename = 'FacebookPlaces.json'
     inputfile = open(filename, 'r')
@@ -79,6 +95,6 @@ if __name__ == "__main__":
         data['facebook'] = rjson
         json.dump(data, outputfile)
         outputfile.write('\n')
-        time.sleep(interval + numpy.random.rand()
+        time.sleep(interval + numpy.random.rand())
     outputfile.close()
     inputfile.close()
