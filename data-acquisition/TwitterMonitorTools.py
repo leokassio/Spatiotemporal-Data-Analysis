@@ -6,6 +6,8 @@
 
 import csv
 import sys
+import json
+import numpy
 import colorama
 import datetime
 from tqdm import tqdm
@@ -375,9 +377,66 @@ def validateFiles(inputfiles):
 					raise Exception('Invalid photo URL: ' + line)
 		if corruptLines > 0:
 			print '#' + str(corruptLines) + ' corrupted lines ' + filename
-
-
 	return None
+
+def exportInstagramPlaces(inputfilenames, city):
+	'''
+		Export the places indicated on tweets. Focused in instagram samples.
+		The output is a file formated as a JSON object in each line.
+	'''
+	# 743438664911335424, 	id_data
+	# 308749176, 			userid
+	# US,					country
+	# https://www.instagram.com/p/BGsZetZngc9/,
+	# https://api.twitter.com/1.1/geo/id/1d9a5370a355ab0c.json,
+	# Chicago; IL,
+	# 16-06-16 13:42:44,
+	# 41.88256075,
+	# -87.623115,
+	# https://www.instagram.com/explore/locations/96446262/the-giant/,
+	# The Giant,
+	# _dancingincircles_
+
+	dictPlaces = dict()
+	for inputfilename in inputfilenames:
+		inputfile = open(inputfilename, 'r')
+		print 'Reading', inputfilename
+		for line in tqdm(inputfile, desc='Loading', leave=False):
+			fields = line.split(',')
+			country = fields[2]
+			instagram = fields[9]
+			if instagram == 'not-available':
+				continue
+			name = fields[10]
+			placeid = fields[7] + ',' + fields[8]
+			data = dict(name=name, instagram=instagram)
+			try:
+				coords = dictPlaces[instagram]['coords']
+				try:
+					coords[placeid] += 1
+				except KeyError:
+					coords[placeid] = 1
+			except KeyError:
+				data['coords'] = {placeid:1}
+				dictPlaces[instagram] = data
+			dictPlaces[instagram]['country'] = country
+	sortedPlaces = sorted(dictPlaces.keys(), key=lambda k:sum(dictPlaces[k]['coords'].values()), reverse=True)
+	outputfilename = city + '-places-database.json'
+	outputfile = open(outputfilename, 'w')
+	for p in sortedPlaces:
+		data = dictPlaces[p]
+		coords = data['coords']
+		if len(coords) == 1: # 1 coord 1 single sample
+			data['coords'] = data['coords'].keys()[0]
+		elif sum(coords.values()) > len(coords):
+			sortedCoords = sorted(coords.keys(), key=lambda k:coords[k], reverse=True)
+			data['coords'] = sortedCoords[0]
+		else:
+			data['coords'] = numpy.random.choice(data['coords'].keys())
+		json.dump(data, outputfile)
+		outputfile.write('\n')
+	outputfile.close()
+	return
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
@@ -409,6 +468,10 @@ if __name__ == "__main__":
 	elif f == 'validate-url-files':
 		inputfiles = args
 		validateFiles(inputfiles)
+	elif f == 'places-db':
+		city = args.pop(0)
+		inputfilenames = args
+		exportInstagramPlaces(inputfilenames, city)
 	else:
 		print 'look in the code to know the CLI haha :)'
 
