@@ -97,7 +97,10 @@ if __name__ == "__main__":
             print e
             time.sleep(numpy.random.randint(55, 300)) # 1 to 5 minutes
             continue
-        rjson = json.loads(resp.content)
+        try:
+            rjson = json.loads(resp.content)
+        except ValueError: # invalid JSON
+            continue
         try:
             del rjson['paging']
         except KeyError:
