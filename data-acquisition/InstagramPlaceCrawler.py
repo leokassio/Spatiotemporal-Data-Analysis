@@ -2,9 +2,10 @@
 # ============================================================================================
 # Kassio Machado - GNU License - 2016-02-12
 # PhD candidate on Science Computing - UFMG/Brazil
-# Crawler to visit Instagram urls and get venues registered on dataset of check-ins
+# Crawler to visit Instagram urls and get venues registered on photos
 # the data if provided in an CSV file and exported in other CSV file.
-# The crawler used selenium to perform the HTML/JavaScript parsing
+# The crawler uses selenium to perform the HTML/JavaScript parsing
+# supported by PhantomJS driver.
 # ============================================================================================
 
 import sys
