@@ -4,7 +4,7 @@
 
 (This is a WEIRD work in progress)
 
-Set of tools for exploratory data analysis using Twitter, Instagram and Foursquare data.
+Set of tools for Exploratory Data Analysis (EDA) using Twitter, Instagram and Foursquare data.
 
 ### Data Acquisition
 * TwitterMonitor.py: module to define the basic functions used by TwitterMonitor crawlers. Actually, it includes banner and configuration loaders.
