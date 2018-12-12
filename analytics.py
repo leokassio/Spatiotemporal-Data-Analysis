@@ -5,6 +5,7 @@ import time
 import numpy
 from tqdm import tqdm
 
+# This is a simple modification.
 def normalizeMax(dataList, maxValue):
 	values = []
 	maxValue = float(maxValue)
