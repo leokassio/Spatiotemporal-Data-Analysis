@@ -12,39 +12,57 @@
 # ============================================================================================
 # git commands
 # ============================================================================================
-git log 											-> show git log
-git status										-> show status of files available to commit
-git add -u 										-> add all files modified and tracked to the current commit
-git add filename 							-> add file to commit
+git log 				-> show git log
+git status				-> show status of files available to commit
+git add -u 				-> add all files modified and tracked to the current commit
+git add filename 			-> add file to commit
 git commit -m "commit text"		-> make a commit
-git push origin master				-> publish the commits commit on master brach
-git pull											-> update your local repository to the newest commit
-git rebase -i									-> used to merge multiples commits
-git reflog 										-> indexes of commits (allows to you to revert to a specific commit)
-git reset --hard hash-commit	-> reset to specific
-git checkout -b brachname			-> create a new branch
+git push origin master			-> publish the commits commit on master brach
+git pull				-> update your local repository to the newest commit
+git rebase -i				-> used to merge multiples commits
+git reflog 				-> indexes of commits (allows to you to revert to a specific commit)
+git reset --hard hash-commit		-> reset to specific
+git checkout -b brachname		-> create a new branch
 git remote add origin link		-> add remote repository
-git clone link								-> clone remote repository
-git remote -v 								-> show remote repositories connected
-git diff branch1 branch2			-> preview the differences
+git clone link				-> clone remote repository
+git remote -v 				-> show remote repositories connected
+git diff branch1 branch2		-> preview the differences
 
 # ============================================================================================
 # Unix Bash Code Snippets
 # ============================================================================================
-head -10 filename # top lines of file
-tail -10 filename # bottom lines of file
-unzip -l filename # list files of zip file
-zip -r zipfile filetoadd # add a new file to zipfile that already exists
-ps -aux					# list of process running
+head -10 filename 		# top lines of file
+tail -10 filename 		# bottom lines of file
+unzip -l filename 		# list files of zip file
+zip -r zipfile filetoadd 	# add a new file to zipfile that already exists
+ps -aux				# list of process running
 ps -o etime= -p PID		# time elapsed since the creation of process
-ps -o stime,time 6198 	# datetime of process creation
+ps -o stime,time 6198 		# datetime of process creation
 cat /proc/meminfo 		# current status of memory
-date 					# simple current datetime os system
+date 				# simple current datetime os system
 
 # ============================================================================================
 # Python Code Snippets
 # ============================================================================================
 
+# Local Authentication
+import hashlib
+import getpass
+
+def hash_sha256(sentence):
+    hashed = hashlib.sha256(sentence.encode('utf-8'))
+    hashed = hashed.hexdigest()
+    return hashed
+
+psswrd = hashlib.sha256(getpass.getpass().encode('utf-8'))
+psswrd = psswrd.hexdigest()
+if hashed_psswrd == psswrd:
+    print('Valid Pass')
+else:
+    print('Invalid Pass')
+
+
+# CLI Interface
 import sys
 import argparse
 parser = argparse.ArgumentParser(description=' brief desc. of what the program does and how it works.',
@@ -66,7 +84,7 @@ else:
 
 # Funny error messages
 print '¯\_(ツ)_/¯ sometines Exceptions happen bro'
-print '(⊙_☉) A wild EXCEPTION appears'
+print '(⊙_☉) A wild EXCEPTION appeared'
 print '(⊙_☉) A wild KeyError appears\nI have to terminate, sorry ¯\_(ツ)_/¯'
 
 # exception tracker
